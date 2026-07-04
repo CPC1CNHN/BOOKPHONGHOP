@@ -551,6 +551,7 @@
 </div>
 
 
+<div class="ov" id="restoreSelectOv" onclick="if(event.target.id==='restoreSelectOv')closeRestoreSelect()">
   <div class="box" style="max-width:650px;max-height:75vh">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
       <h3 style="margin:0">♻️ Khôi phục dữ liệu bị huỷ</h3>
@@ -579,6 +580,7 @@
 </div>
 
 
+<div class="ov" id="editRoomOv" onclick="if(event.target.id==='editRoomOv')closeEditRoom()">
   <div class="box">
     <h3>Chỉnh sửa phòng họp</h3>
     <div class="form-group">
@@ -615,11 +617,14 @@
 </div>
 
 
-  <div style="font-size:36px">🔄</div>
-  <h3>Đã có bản mới</h3>
-  <p>Trang này đang chạy phiên bản cũ nên đã tạm khoá để bảo vệ dữ liệu. Vui lòng tải lại để tiếp tục.</p>
-  <button onclick="location.reload()">Tải lại ngay</button>
-</div></div>
+<div id="lockOverlay">
+  <div class="lockbox">
+    <div style="font-size:36px">🔄</div>
+    <h3>Đã có bản mới</h3>
+    <p>Trang này đang chạy phiên bản cũ nên đã tạm khoá để bảo vệ dữ liệu. Vui lòng tải lại để tiếp tục.</p>
+    <button onclick="location.reload()">Tải lại ngay</button>
+  </div>
+</div>
 
 <!-- Firebase (đồng bộ dữ liệu dùng chung thời gian thực) -->
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
