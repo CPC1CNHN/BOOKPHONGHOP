@@ -1556,7 +1556,7 @@ function openBookHalf(roomId,date,half){
   ss.value=sStart; fillSelect(es, mins(sStart)+STEP); es.value=sEnd;
 }
 function closeOv(){ document.getElementById('ov').classList.remove('on'); modalOpen=false; editingId=null; }
-function showErr(m){const e=document.getElementById('mErr');e.textContent=m;e.classList.add('on')}
+function showErr(m){const e=document.getElementById('mErr');e.innerHTML=m;e.classList.add('on')}
 function hideErr(){document.getElementById('mErr').classList.remove('on')}
 
 async function saveBooking(){
@@ -1603,7 +1603,7 @@ async function saveBooking(){
     if(date<ymd(new Date())){ return showErr('Không thể dời về ngày đã qua.'); }
     if(date===ymd(new Date()) && mins(start)<=nowMin()){ return showErr('Giờ bắt đầu phải sau thời điểm hiện tại.'); }
     const clash=bookingsOf(roomId,date).find(x=>x.id!==editingId && mins(start)<mins(x.end)&&mins(end)>mins(x.start));
-    if(clash){ return showErr(`Trùng lịch nhóm khác: phòng đã có ${clash.start}–${clash.end} (${clash.name}). Hãy đổi giờ/ngày/phòng.`); }
+    if(clash){ return showErr(`⚠️ Trùng lịch: <b>${esc(clash.name)}</b> (${esc(clash.dept)}) đã đặt <b>${clash.start}–${clash.end}</b>${clash.purpose?' · '+esc(clash.purpose):''}.<br>Hãy đổi giờ, ngày hoặc phòng khác.`); }
     if(!email){ return showErr('Hãy nhập email để nhận nhắc trả phòng.'); }
     if(!emailRegex.test(email)){ return showErr('Email không đúng định dạng (vd: ten@cpc1hn.com.vn).'); }
     b.roomId=roomId; b.date=date; b.start=start; b.end=end;
@@ -1632,12 +1632,21 @@ async function saveBooking(){
   if(!dates.length){return showErr('Hãy chọn ít nhất một ngày để đặt.');}
 
   // kiểm tra trùng từng ngày
-  const ok=[], bad=[];
+  const ok=[], bad=[], badClash=[];
   dates.forEach(ds=>{
     const clash=bookingsOf(roomId,ds).find(b=>mins(start)<mins(b.end)&&mins(end)>mins(b.start));
-    if(clash) bad.push(ds); else ok.push(ds);
+    if(clash){ bad.push(ds); badClash.push({date:ds,clash}); } else ok.push(ds);
   });
-  if(!ok.length){return showErr('Tất cả các ngày chọn đều trùng giờ — không đặt được.');}
+  if(!ok.length){
+    // Lấy thông tin chi tiết của lịch trùng (ngày đầu tiên trong bad)
+    const firstBadDate = bad[0];
+    const clashDetail = bookingsOf(roomId, firstBadDate).find(b=>mins(start)<mins(b.end)&&mins(end)>mins(b.start));
+    let errMsg = '⚠️ Trùng lịch — không đặt được.';
+    if(clashDetail){
+      errMsg = `⚠️ Trùng lịch với <b>${esc(clashDetail.name)}</b> (${esc(clashDetail.dept)}): đang đặt <b>${clashDetail.start}–${clashDetail.end}</b>${clashDetail.purpose?' · '+esc(clashDetail.purpose):''}.<br>Hãy đổi giờ, ngày hoặc chọn phòng khác.`;
+    }
+    return showErr(errMsg);
+  }
 
   const gid = ok.length>1 ? 'g'+Date.now()+Math.floor(Math.random()*1000) : null;
   ok.forEach((ds,i)=>{
@@ -1649,7 +1658,13 @@ async function saveBooking(){
   });
   closeOv(); render(); updateBell();
   let msg = ok.length>1 ? `Đã gửi yêu cầu cho ${ok.length} ngày — chờ Admin xác nhận.` : 'Đã gửi yêu cầu — chờ Admin xác nhận.';
-  if(bad.length) msg += ` Bỏ qua ${bad.length} ngày trùng giờ: ${bad.map(x=>x.slice(8)+'/'+x.slice(5,7)).join(', ')}.`;
+  if(bad.length){
+    const badDetails = badClash.map(({date,clash})=>{
+      const d=date.slice(8)+'/'+date.slice(5,7);
+      return `${d} (trùng ${clash.name} ${clash.start}–${clash.end})`;
+    }).join(', ');
+    msg += ` Bỏ qua ${bad.length} ngày trùng: ${badDetails}.`;
+  }
   toast(msg);
 }
 
