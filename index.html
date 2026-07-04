@@ -484,36 +484,26 @@
         </div>
       </div>
       <div>
-        <label>Khung giờ</label>
+        <label>Khung giờ <span style="font-weight:400;color:var(--mut)">(chọn nhanh hoặc nhập tay bên dưới)</span></label>
         <div class="quickslots">
           <button type="button" data-kind="full" onclick="setSlot('full')">Cả ngày<small>08:00–17:15</small></button>
           <button type="button" data-kind="morning" onclick="setSlot('morning')">Sáng<small>08:00–12:00</small></button>
           <button type="button" data-kind="afternoon" onclick="setSlot('afternoon')">Chiều<small>13:15–17:15</small></button>
         </div>
-        <div class="loc-hint">Hoặc tự chọn giờ bên dưới (chỉnh được tuỳ ý).</div>
       </div>
       <div class="row2">
-        <div><label>Giờ bắt đầu <span style="color:#DC2626">*</span></label><select id="fStart"></select></div>
-        <div><label>Giờ kết thúc <span style="color:#DC2626">*</span></label><select id="fEnd"></select></div>
-      </div>
-      <div style="padding:8px 10px;background:#f0f9ff;border-radius:8px;margin-bottom:8px">
-        <label style="display:flex;gap:8px;align-items:center;cursor:pointer">
-          <input type="checkbox" id="fCustomTime" onchange="toggleCustomTime()">
-          <span style="font-size:13px;color:var(--navy);font-weight:600">Nhập giờ tự do (thay vì chọn slot)</span>
-        </label>
-      </div>
-      <div id="customTimeWrap" style="display:none;row-gap:8px;margin-bottom:8px">
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-          <div>
-            <label style="font-size:12px;font-weight:600;color:var(--navy);display:block;margin-bottom:4px">Bắt đầu</label>
-            <input type="time" id="fCustomStart" style="width:100%;padding:8px;border:1px solid var(--line);border-radius:8px;font-size:14px">
-          </div>
-          <div>
-            <label style="font-size:12px;font-weight:600;color:var(--navy);display:block;margin-bottom:4px">Kết thúc</label>
-            <input type="time" id="fCustomEnd" style="width:100%;padding:8px;border:1px solid var(--line);border-radius:8px;font-size:14px">
-          </div>
+        <div>
+          <label>Giờ bắt đầu <span style="color:#DC2626">*</span></label>
+          <input type="time" id="fCustomStart" step="300" style="width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:10px;font-size:16px;min-height:48px" onchange="clearSlotHL()">
+        </div>
+        <div>
+          <label>Giờ kết thúc <span style="color:#DC2626">*</span></label>
+          <input type="time" id="fCustomEnd" step="300" style="width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:10px;font-size:16px;min-height:48px" onchange="clearSlotHL()">
         </div>
       </div>
+      <select id="fStart" style="display:none"></select>
+      <select id="fEnd" style="display:none"></select>
+      <input type="checkbox" id="fCustomTime" style="display:none" checked>
       <div class="row2">
         <div><label>Người đăng ký <span style="color:#DC2626">*</span></label><input id="fName" placeholder="Họ tên"></div>
         <div><label>Phòng ban <span style="color:#DC2626">*</span></label><input id="fDept" placeholder="VD: Kế toán"></div>
@@ -1072,30 +1062,15 @@ function initData(){
   }
 }
 
-function toggleCustomTime(){
-  const wrap=document.getElementById('customTimeWrap');
-  const cb=document.getElementById('fCustomTime').checked;
-  wrap.style.display=cb?'block':'none';
-  const ss=document.getElementById('fStart'), es=document.getElementById('fEnd');
-  ss.disabled=cb; es.disabled=cb;
-}
+function toggleCustomTime(){} // no-op: giờ tự do luôn hiển thị
 
 function getStartAndEndTime(){
-  const useCustom=document.getElementById('fCustomTime').checked;
-  if(useCustom){
-    const start=document.getElementById('fCustomStart').value;
-    const end=document.getElementById('fCustomEnd').value;
-    if(!start){showErr('Hãy nhập giờ bắt đầu.'); return null;}
-    if(!end){showErr('Hãy nhập giờ kết thúc.'); return null;}
-    if(start>=end){showErr('Giờ kết thúc phải sau giờ bắt đầu.'); return null;}
-    return {start,end};
-  } else {
-    const ss=document.getElementById('fStart').value;
-    const es=document.getElementById('fEnd').value;
-    if(!ss){showErr('Hãy chọn giờ bắt đầu.'); return null;}
-    if(!es){showErr('Hãy chọn giờ kết thúc.'); return null;}
-    return {start:ss,end:es};
-  }
+  const start=document.getElementById('fCustomStart').value;
+  const end=document.getElementById('fCustomEnd').value;
+  if(!start){showErr('Hãy nhập giờ bắt đầu.'); return null;}
+  if(!end){showErr('Hãy nhập giờ kết thúc.'); return null;}
+  if(start>=end){showErr('Giờ kết thúc phải sau giờ bắt đầu.'); return null;}
+  return {start,end};
 }
 
 function checkOverdueAndNotify(){
@@ -1388,11 +1363,10 @@ function openBook(roomId,date,suggestStart){
   let from=OPEN;
   if(suggestStart){ from=Math.min(Math.max(mins(suggestStart),OPEN),CLOSE-STEP); }
   else if(date===ymd(new Date())){ const n=Math.ceil(nowMin()/STEP)*STEP; from=Math.min(Math.max(n,OPEN),CLOSE-STEP); }
-  const ss=document.getElementById('fStart'), es=document.getElementById('fEnd');
-  fillSelect(ss, OPEN); ss.value=toHM(Math.max(from,OPEN));
-  fillSelect(es, mins(ss.value)+STEP); es.value=toHM(Math.min(mins(ss.value)+60,CLOSE));
-  ss.onchange=()=>{ const sv=mins(ss.value); fillSelect(es,sv+STEP); es.value=toHM(Math.min(sv+60,CLOSE)); clearSlotHL(); };
-  es.onchange=clearSlotHL; clearSlotHL();
+  const startVal=toHM(Math.max(from,OPEN));
+  document.getElementById('fCustomStart').value=startVal;
+  document.getElementById('fCustomEnd').value=toHM(Math.min(mins(startVal)+60,CLOSE));
+  clearSlotHL();
   document.getElementById('fPurpose').value='';
   document.getElementById('fPeople').value='';
   // tự điền Họ tên & Phòng ban đã lưu trên thiết bị này
@@ -1414,9 +1388,8 @@ function setSlot(kind){
   else if(kind==='morning'){ s='08:00'; e='12:00'; }
   else if(kind==='afternoon'){ s='13:15'; e='17:15'; }
   else return;
-  const ss=document.getElementById('fStart'), es=document.getElementById('fEnd');
-  fillSelect(ss, OPEN); ss.value=s;
-  fillSelect(es, mins(s)+STEP); es.value=e;
+  document.getElementById('fCustomStart').value=s;
+  document.getElementById('fCustomEnd').value=e;
   document.querySelectorAll('.quickslots button').forEach(b=>b.classList.toggle('on', b.dataset.kind===kind));
 }
 function updateTickedInfo(){
@@ -1437,9 +1410,8 @@ function applySlotToTicked(kind){
   const slot = slots[kind];
   if(!slot) return;
   // Áp dụng khung giờ
-  const ss=document.getElementById('fStart'), es=document.getElementById('fEnd');
-  fillSelect(ss, OPEN); ss.value=slot.s;
-  fillSelect(es, mins(ss.value)+STEP); es.value=slot.e;
+  document.getElementById('fCustomStart').value=slot.s;
+  document.getElementById('fCustomEnd').value=slot.e;
   document.querySelectorAll('.quickslots button').forEach(b=>b.classList.toggle('on', b.dataset.kind===kind));
   // Hiển thị danh sách ngày + khung giờ
   showTickedDaysPreview(ticked, slot.s, slot.e, kind);
@@ -1519,11 +1491,9 @@ function openEditBooking(id){
   document.getElementById('dayTicksWrap').style.display='none';
   document.getElementById('multiDayToggle').style.display='none';
   document.querySelector('#ov .booknote').style.display='none';
-  const ss=document.getElementById('fStart'), es=document.getElementById('fEnd');
-  fillSelect(ss, OPEN); ss.value=b.start;
-  fillSelect(es, mins(b.start)+STEP); es.value=b.end;
-  ss.onchange=()=>{ const sv=mins(ss.value); fillSelect(es,sv+STEP); if(mins(es.value)<=sv) es.value=toHM(Math.min(sv+60,CLOSE)); clearSlotHL(); };
-  es.onchange=clearSlotHL; clearSlotHL();
+  document.getElementById('fCustomStart').value=b.start;
+  document.getElementById('fCustomEnd').value=b.end;
+  clearSlotHL();
   document.getElementById('fName').value=b.name;
   document.getElementById('fDept').value=b.dept;
   document.getElementById('fPurpose').value=b.purpose||'';
@@ -1550,10 +1520,10 @@ function updRangeHint(){
 }
 function openBookHalf(roomId,date,half){
   openBook(roomId,date);
-  const ss=document.getElementById('fStart'), es=document.getElementById('fEnd');
   const sStart = half==='S' ? '08:00' : '13:00';
   const sEnd   = half==='S' ? '12:00' : '17:00';
-  ss.value=sStart; fillSelect(es, mins(sStart)+STEP); es.value=sEnd;
+  document.getElementById('fCustomStart').value=sStart;
+  document.getElementById('fCustomEnd').value=sEnd;
 }
 function closeOv(){ document.getElementById('ov').classList.remove('on'); modalOpen=false; editingId=null; }
 function showErr(m){const e=document.getElementById('mErr');e.innerHTML=m;e.classList.add('on')}
