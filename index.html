@@ -1,5 +1,5 @@
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
 <title>Quản lý Phòng họp</title>
 <style>
   :root{
@@ -264,41 +264,116 @@
   .cnt{display:none;font-size:10.5px;font-weight:700;color:var(--teal-d)}
   @media(max-width:560px){ .mcell{min-height:74px;padding:3px} .mchip,.mmore{display:none} .mcell .cnt{display:block} }
 
-  @media(max-width:560px){
-    .clock .t{font-size:18px}
+  @media(max-width:600px){
+    /* ===== LAYOUT ===== */
+    body{font-size:15px}
+    .wrap{padding:0 10px 80px}
+
+    /* ===== HEADER ===== */
+    header{border-radius:0;padding:10px 14px}
+    .brand{font-size:15px}
+    .brand .dot{width:26px;height:26px;font-size:15px}
+    .clock .t{font-size:16px}
+    .clock .d{font-size:11px}
+    .hctrl{gap:6px}
+    .hbtn{padding:7px 10px;font-size:12px}
+
+    /* ===== TABS ===== */
+    .tabs{gap:4px;padding:4px;margin-bottom:12px;width:100%}
+    .tab{padding:9px 12px;font-size:13px;flex:1;text-align:center}
+
+    /* ===== CARDS ===== */
     .grid{grid-template-columns:1fr}
-    .row2{grid-template-columns:1fr}
-    .hctrl{width:100%;justify-content:flex-start}
-    .clock{margin-left:auto}
-    /* Mobile: cải thiện giao diện nhỏ */
-    body{font-size:14px}
-    input,select,button,.box{font-size:14px}
-    label{font-size:14px;font-weight:600}
-    h2{font-size:18px}
-    h3{font-size:16px}
-    .room{margin-bottom:10px;padding:10px}
-    .room-name{font-size:14px}
-    .room-sub{font-size:12px}
-    .meta{font-size:12px}
-    .room-actions button{font-size:12px;padding:8px 10px}
-    /* Week calendar to hơn */
-    .weekwrap{max-height:none;overflow:visible}
-    .week td{min-height:80px;padding:6px 2px;font-size:12px}
-    .week .nm{font-weight:700;font-size:13px}
-    .week .cnt{font-size:11px;line-height:1.3;min-height:auto}
-    /* Month calendar to hơn */
-    .month td{min-height:70px;padding:4px;font-size:11px}
-    .month .cnt{font-size:10px;line-height:1.2}
-    /* Form spacing */
-    .form-group{margin-bottom:12px}
-    .form-group input,.form-group select{padding:10px;min-height:44px}
-    .form-group label{margin-bottom:6px}
-    /* Landscape mode */
-    @media(orientation:landscape){
-      .form-group{margin-bottom:8px}
-      .form-group input,.form-group select{min-height:40px}
-      body{font-size:13px}
+    .room{padding:12px;gap:8px}
+    .room-name{font-size:15px}
+    .room-sub,.meta{font-size:12px}
+    .room-actions{gap:6px}
+    .room-actions button{font-size:13px;padding:10px 8px;min-height:44px}
+
+    /* ===== MODAL — BOTTOM SHEET ===== */
+    .ov{padding:0;align-items:flex-end}
+    .modal{
+      border-radius:20px 20px 0 0;
+      max-width:100%;
+      max-height:92vh;
+      display:flex;
+      flex-direction:column;
+      animation:slideUp .22s ease;
     }
+    @keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+    .modal h3{
+      padding:14px 16px 12px;
+      font-size:16px;
+      position:relative;
+    }
+    .modal h3::before{
+      content:;
+      display:block;
+      width:40px;height:4px;
+      background:rgba(255,255,255,.35);
+      border-radius:2px;
+      margin:0 auto 10px;
+    }
+    .mbody{
+      padding:14px 16px;
+      gap:11px;
+      overflow-y:auto;
+      flex:1;
+      -webkit-overflow-scrolling:touch;
+    }
+    .mfoot{padding:12px 16px 20px;gap:8px}
+    .mfoot button{min-height:48px;font-size:15px;font-weight:700}
+
+    /* ===== FORM INPUTS ===== */
+    label{font-size:13px}
+    input,select,textarea{
+      font-size:16px; /* Ngăn iOS zoom khi focus */
+      padding:11px 12px;
+      min-height:48px;
+      border-radius:10px;
+    }
+    .row2{grid-template-columns:1fr}
+    .booknote{font-size:12.5px;padding:9px 11px}
+    .quickslots button{min-height:52px;font-size:14px}
+    .quickslots button small{font-size:11px}
+
+    /* ===== LỊCH TUẦN ===== */
+    .weekwrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+    .week td{min-height:80px;padding:4px 2px;font-size:11px}
+    .c-name .nm{font-size:11px}
+    .c-name .sb{font-size:10px}
+    .bk{font-size:10px;padding:2px 4px}
+    .bk .tm{font-size:9px}
+
+    /* ===== LỊCH THÁNG ===== */
+    .mcell{min-height:70px;padding:3px 4px}
+    .mchip,.mmore{display:none}
+    .mcell .cnt{display:block;font-size:11px;font-weight:700;color:var(--teal-d)}
+
+    /* ===== BAR / REMIND ===== */
+    .bar{gap:7px}
+    .bar h2{font-size:15px}
+    .legend{font-size:11.5px;gap:9px}
+    .rm-item{font-size:13px;padding:9px 11px}
+    .rm-note{font-size:12px;padding:9px 11px}
+
+    /* ===== DETAIL / QUEUE MODAL ===== */
+    .detail{font-size:13px;padding:10px 12px;gap:6px}
+    .qrow .qh{font-size:13px}
+    .qrow .qm{font-size:12px}
+    .qrow .qbtns button{min-height:44px;font-size:13px}
+
+    /* ===== FORM ADMIN (box) ===== */
+    .form-group{margin-bottom:11px}
+    .form-group label{font-size:13px;margin-bottom:5px}
+    .form-group input,.form-group select{padding:11px 12px;min-height:48px;font-size:16px}
+
+    /* ===== FOOTER ===== */
+    footer{font-size:11.5px;padding:0 4px}
+    .link{font-size:12px}
+
+    /* ===== TOAST ===== */
+    #toast{font-size:13px;padding:10px 16px;bottom:16px;max-width:90vw}
   }
   @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
@@ -1663,7 +1738,8 @@ function openDetail(id){
      <div><b>Thời gian:</b> ${b.start} – ${b.end}</div>
      <div><b>Người đăng ký:</b> ${esc(b.name)} — ${esc(b.dept)}</div>
      <div><b>Nội dung:</b> ${esc(b.purpose||'(không ghi)')}</div>
-     <div><b>Số người:</b> ${esc(b.people||'?')}</div>${grpNote}`;
+     <div><b>Số người:</b> ${esc(b.people||'?')}</div>
+     <div style="color:var(--mut);font-size:12.5px;margin-top:4px">🕐 Đặt lúc: ${b.createdAt ? (()=>{ const dt=new Date(b.createdAt); const p=n=>String(n).padStart(2,'0'); return p(dt.getDate())+'/'+p(dt.getMonth()+1)+'/'+dt.getFullYear()+' lúc '+p(dt.getHours())+':'+p(dt.getMinutes())+':'+p(dt.getSeconds()); })() : '—'}</div>${grpNote}`;
   const ongoing = !pend && !fixed && b.date===ymd(new Date()) && mins(b.start)<=nowMin() && nowMin()<mins(b.end) && !b.released;
   document.getElementById('dApproveBtn').style.display = (isAdmin && pend) ? '' : 'none';
   document.getElementById('dRelBtn').style.display = ongoing ? '' : 'none';
