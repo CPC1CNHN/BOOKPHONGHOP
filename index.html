@@ -1189,8 +1189,7 @@ function renderToday(){
   const today=parseYmd(viewDate);
   const isToday=viewDate===todayStr;
   document.getElementById('todayTitle').textContent=
-    isToday ? 'Tình trạng phòng — Hôm nay, '+fmtVNDate(today)
-            : 'Tình trạng phòng — '+fmtVNDate(today);
+    isToday ? 'Hôm nay, '+fmtVNDate(today) : fmtVNDate(today);
   const picker=document.getElementById('viewDayPicker');
   if(picker) picker.value=viewDate;
   const wrap=document.getElementById('todayBoard');
