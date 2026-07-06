@@ -800,7 +800,7 @@ function dbClearBookings(){
   if(appLocked){ toast('Bản cũ đã khoá — vui lòng tải lại trang.'); return; }
   if(USE_FB){
     // KHÔNG xoá thật — chỉ ẩn (đánh dấu cancelled) để có thể khôi phục trong Firebase
-    bookings.forEach(b=>{ if(!b.cancelled) fdb.ref('bookings/'+b.id).update({cancelled:true}); });
+    const _now=new Date().toISOString(); bookings.forEach(b=>{ if(!b.cancelled) fdb.ref('bookings/'+b.id).update({cancelled:true,cancelledAt:_now}); });
   } else { bookings=[]; lsSaveBookings(); afterData(); }
 }
 function dbSaveRecurring(){
@@ -853,18 +853,34 @@ function saveEditRoom(){
 }
 function openRestoreSelect(){
   if(!isAdmin){ toast('Chỉ Admin.'); return; }
-  const cancelled=bookings.filter(b=>b.cancelled);
+  const cancelled=bookings.filter(b=>b.cancelled)
+    .sort((a,b)=>{
+      // Ưu tiên cancelledAt, nếu không có thì dùng date+start của lịch đặt
+      const ta=a.cancelledAt||'';
+      const tb=b.cancelledAt||'';
+      if(ta && tb) return ta>tb?-1:1;
+      if(ta) return -1; // a có cancelledAt, b không có → a lên trên
+      if(tb) return 1;
+      // Cả hai không có cancelledAt → sort theo ngày lịch họp, mới nhất lên trên
+      const da=(a.date||'')+(a.start||''), db=(b.date||'')+(b.start||'');
+      return da>db?-1:1;
+    });
   if(!cancelled.length){ toast('Không có dữ liệu bị huỷ.'); return; }
   
+  function fmtDT(iso){ if(!iso) return ''; const dt=new Date(iso); const p=n=>String(n).padStart(2,'0'); return p(dt.getDate())+'/'+p(dt.getMonth()+1)+'/'+dt.getFullYear()+' '+p(dt.getHours())+':'+p(dt.getMinutes()); }
   let html='';
   cancelled.forEach(b=>{
     const r=roomById(b.roomId);
+    const cancelTimeStr = b.cancelledAt
+      ? `<span style="color:#c0392b;font-weight:700">🗑️ Huỷ: ${fmtDT(b.cancelledAt)}</span>`
+      : `<span style="color:#94A3B8;font-style:italic">Chưa rõ thời gian huỷ</span>`;
     html+=`<label class="restore-item">
       <input type="checkbox" class="restore-check" value="${b.id}" onchange="updateSelectedCount()">
       <div class="restore-item-info">
         <div class="restore-item-room">🏛️ ${esc(r.name)}</div>
         <div class="restore-item-time">📅 ${b.date} · 🕐 ${b.start}–${b.end}</div>
         <div class="restore-item-person">👤 ${esc(b.name)} (${esc(b.dept)})</div>
+        <div style="font-size:12px;margin-top:3px">${cancelTimeStr}</div>
       </div>
     </label>`;
   });
@@ -1763,7 +1779,7 @@ async function cancelCurrent(){
   if(!isOwnerOrAdmin(b)){ toast('Chỉ người đăng ký hoặc Admin mới huỷ được lượt này.'); return; }
   if(!isAdmin && hasStarted(b)){ toast('Cuộc họp đã bắt đầu — không huỷ được, hãy dùng "Trả phòng".'); return; }
   if(!confirm('Huỷ lượt đặt này?'))return;
-  b.cancelled=true; dbSaveBooking(b);
+  b.cancelled=true; b.cancelledAt=new Date().toISOString(); dbSaveBooking(b);
   closeOv2(); render(); updateBell(); toast('Đã huỷ lượt đặt.');
 }
 async function resetAll(){
@@ -1965,7 +1981,7 @@ async function rejectGroup(gid){
 async function cancelGroup(gid){
   if(!isAdmin){ toast('Chỉ Admin mới được huỷ lịch.'); return; }
   if(!confirm('Huỷ toàn bộ các ngày trong nhóm đăng ký này?'))return;
-  bookings.filter(b=>b.groupId===gid && !b.cancelled).forEach(b=>{ b.cancelled=true; dbSaveBooking(b); });
+  const _ca=new Date().toISOString(); bookings.filter(b=>b.groupId===gid && !b.cancelled).forEach(b=>{ b.cancelled=true; b.cancelledAt=_ca; dbSaveBooking(b); });
   closeOv2(); render(); updateBell(); toast('Đã huỷ cả nhóm.');
 }
 function cancelGroupFromDetail(){ const b=findAny(detailId); if(b&&b.groupId) cancelGroup(b.groupId); }
