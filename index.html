@@ -401,8 +401,14 @@
 
   <!-- TODAY -->
   <section id="view-today">
-    <div class="bar">
-      <h2 id="todayTitle">Tình trạng phòng hôm nay</h2>
+    <div class="bar" style="flex-wrap:wrap;gap:8px">
+      <button class="act btn-ghost" onclick="shiftViewDay(-1)">‹</button>
+      <h2 id="todayTitle" style="min-width:0">Tình trạng phòng hôm nay</h2>
+      <button class="act btn-ghost" onclick="shiftViewDay(1)">›</button>
+      <button class="act btn-soft" onclick="goViewToday()">Hôm nay</button>
+      <label class="weekpick" style="font-size:13px">Chọn ngày
+        <input type="date" id="viewDayPicker" onchange="gotoViewDay(this.value)">
+      </label>
       <div class="spacer"></div>
       <div class="legend">
         <span><i style="background:var(--free)"></i>Trống</span>
@@ -751,6 +757,7 @@ let bookings = [];
 let recurring = [];       // các lịch cố định (rule)
 let exceptions = [];      // các buổi bị bỏ: "ruleId|date"
 let view='today';
+let viewDate='';
 let weekMonday = mondayOf(new Date());
 let monthCursor = firstOfMonth(new Date());
 let modalOpen=false;
@@ -1177,18 +1184,25 @@ function roomStatusToday(roomId){
 
 /* ---------- Render: Hôm nay ---------- */
 function renderToday(){
-  const today=new Date();
-  document.getElementById('todayTitle').textContent='Tình trạng phòng — '+fmtVNDate(today);
+  const todayStr=ymd(new Date());
+  if(!viewDate) viewDate=todayStr;
+  const today=parseYmd(viewDate);
+  const isToday=viewDate===todayStr;
+  document.getElementById('todayTitle').textContent=
+    isToday ? 'Tình trạng phòng — Hôm nay, '+fmtVNDate(today)
+            : 'Tình trạng phòng — '+fmtVNDate(today);
+  const picker=document.getElementById('viewDayPicker');
+  if(picker) picker.value=viewDate;
   const wrap=document.getElementById('todayBoard');
   if(!isWorkingDate(today)){
-    wrap.innerHTML='<div class="empty-state">Hôm nay là Chủ Nhật — ngoài giờ mở cửa. Bạn vẫn có thể đặt trước cho các ngày trong tuần ở tab <b>Lịch tuần</b>.</div>';
+    wrap.innerHTML=`<div class="empty-state">Ngày ${fmtVNDate(today)} là Chủ Nhật — ngoài giờ mở cửa.</div>`;
     return;
   }
   let html='';
   [1,2,3].forEach(f=>{
     html+=`<div class="floor"><div class="floor-h"><span class="num">${f}</span> Tầng ${f}</div><div class="grid">`;
     ROOMS.filter(r=>r.floor===f).forEach(r=>{
-      const s=roomStatusToday(r.id);
+      const s=isToday ? roomStatusToday(r.id) : roomStatusOnDate(r.id, viewDate);
       const busy=s.state==='busy', pend=s.state==='pend';
       let body, badgeCls, badgeTxt, roomCls, actions;
       if(busy){
@@ -1202,11 +1216,9 @@ function renderToday(){
           ${r.loc?`<div class="meta2">📍 ${esc(r.loc)}</div>`:''}
           ${c.createdAt?`<div class="meta2">Đặt lúc: ${new Date(c.createdAt).toLocaleString('vi-VN')}</div>`:''}</div>`;
         if(nxt) body+=`<div class="next">▸ Ca tiếp theo: ${nxt.start}–${nxt.end} · ${esc(nxt.name)}</div>`;
-        const bookLater = mins(c.end)<CLOSE ? `<button class="act btn-prim" onclick="openBook('${r.id}','${ymd(today)}','${c.end}')">Đăng ký ca sau</button>` : '';
-        actions = (fixed
-          ? `<button class="act btn-soft" onclick="openDetail('${c.id}')">Chi tiết</button>`
-          : `<button class="act btn-danger" onclick="releaseNow('${c.id}')">Trả phòng</button>
-             <button class="act btn-soft" onclick="openDetail('${c.id}')">Chi tiết</button>`) + bookLater;
+        const bookLater = mins(c.end)<CLOSE ? `<button class="act btn-prim" onclick="openBook('${r.id}','${viewDate}','${c.end}')">Đăng ký ca sau</button>` : '';
+        const releaseBtn = (isToday && !fixed) ? `<button class="act btn-danger" onclick="releaseNow('${c.id}')">Trả phòng</button>` : '';
+        actions = releaseBtn + `<button class="act btn-soft" onclick="openDetail('${c.id}')">Chi tiết</button>` + bookLater;
       }else if(pend){
         const p=s.pend;
         roomCls='pend'; badgeCls='pend'; badgeTxt='Chờ duyệt';
@@ -1215,7 +1227,7 @@ function renderToday(){
           <div class="meta2">Đang chờ Admin xác nhận</div>
           ${r.loc?`<div class="meta2">📍 ${esc(r.loc)}</div>`:''}
           ${p.createdAt?`<div class="meta2">Đặt lúc: ${new Date(p.createdAt).toLocaleString('vi-VN')}</div>`:''}</div>`;
-        const bookLater = mins(p.end)<CLOSE ? `<button class="act btn-prim" onclick="openBook('${r.id}','${ymd(today)}','${p.end}')">Đăng ký ca khác</button>` : '';
+        const bookLater = mins(p.end)<CLOSE ? `<button class="act btn-prim" onclick="openBook('${r.id}','${viewDate}','${p.end}')">Đăng ký ca khác</button>` : '';
         actions = (isAdmin
           ? `<button class="act btn-prim" onclick="approve('${p.id}')">Xác nhận</button>
              <button class="act btn-danger" onclick="reject('${p.id}')">Từ chối</button>`
@@ -1398,6 +1410,21 @@ function openBook(roomId,date,suggestStart){
   document.getElementById('ov').classList.add('on');
 }
 function clearSlotHL(){ document.querySelectorAll('.quickslots button').forEach(b=>b.classList.remove('on')); }
+// Navigation for today view
+function shiftViewDay(d){
+  const dt=parseYmd(viewDate); dt.setDate(dt.getDate()+d);
+  viewDate=ymd(dt); renderToday();
+}
+function goViewToday(){ viewDate=ymd(new Date()); renderToday(); }
+function gotoViewDay(v){ if(v){ viewDate=v; renderToday(); } }
+// Room status for any date (not real-time, just booked/free)
+function roomStatusOnDate(roomId, dateStr){
+  const list=bookingsOf(roomId, dateStr).filter(b=>!isPending(b));
+  const pend=bookingsOf(roomId, dateStr).filter(b=>isPending(b));
+  if(list.length) return {state:'busy', cur:list[0], list:[...list,...pend]};
+  if(pend.length) return {state:'pend', pend:pend[0], list:pend};
+  return {state:'free', next:null, list:[]};
+}
 function setSlot(kind){
   let s,e;
   if(kind==='full'){ s='08:00'; e='17:15'; }
