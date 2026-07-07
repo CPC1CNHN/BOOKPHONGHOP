@@ -453,7 +453,7 @@
 
   <footer>
     Lịch được lưu chung và đồng bộ thời gian thực cho mọi người · Giờ mở cửa 08:00–22:00, Thứ 2 đến Thứ 7 · <b>Phiên bản 32.0</b>
-    <br><button class="link" onclick="enableNotify()">🔔 Bật thông báo trên trình duyệt</button> · <button class="link" onclick="forgetMe()">Quên Họ tên/Phòng ban đã lưu</button> · <button class="link" id="lockManageLink" style="display:none" onclick="openManageLocks()">🔐 Quản lý khóa phòng ban</button> · <button class="link" id="manageRoomsLink" style="display:none" onclick="openManageRooms()">⚙️ Quản lý phòng</button> · <button class="link" id="restoreLink" style="display:none" onclick="openRestoreSelect()">♻️ Khôi phục dữ liệu bị huỷ</button> · <button class="link" id="forceReloadLink" style="display:none" onclick="forceReloadAll()">🔄 Buộc mọi người tải lại bản mới</button> · <button class="link" id="resetLink" style="display:none" onclick="resetAll()">Xoá toàn bộ lịch đặt</button>
+    <br><button class="link" onclick="enableNotify()">🔔 Bật thông báo trên trình duyệt</button> · <button class="link" onclick="forgetMe()">Quên Họ tên/Phòng ban đã lưu</button> · <button class="link" id="lockManageLink" style="display:none" onclick="openManageLocks()">🔐 Quản lý khóa phòng ban</button> · <button class="link" id="manageRoomsLink" style="display:none" onclick="openManageRooms()">⚙️ Quản lý phòng</button> · <button class="link" id="unreleasedLink" style="display:none" onclick="openUnreleased()">⚠️ Chưa trả phòng</button> · <button class="link" id="restoreLink" style="display:none" onclick="openRestoreSelect()">♻️ Khôi phục dữ liệu bị huỷ</button> · <button class="link" id="forceReloadLink" style="display:none" onclick="forceReloadAll()">🔄 Buộc mọi người tải lại bản mới</button> · <button class="link" id="resetLink" style="display:none" onclick="resetAll()">Xoá toàn bộ lịch đặt</button>
   </footer>
 </div>
 
@@ -688,6 +688,20 @@
 </div>
 
 
+<div class="ov" id="unreleasedOv" onclick="if(event.target.id==='unreleasedOv')closeUnreleased()">
+  <div class="box" style="max-width:680px;max-height:85vh;display:flex;flex-direction:column">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+      <h3 style="margin:0">⚠️ Danh sách chưa trả phòng</h3>
+      <button class="act btn-ghost" onclick="closeUnreleased()" style="font-size:18px;padding:4px 10px">✕</button>
+    </div>
+    <div id="unreleasedList" style="overflow-y:auto;flex:1;display:flex;flex-direction:column;gap:8px"></div>
+    <div class="mfoot" style="margin-top:12px">
+      <button class="act btn-ghost" onclick="closeUnreleased()">Đóng</button>
+      <button class="act btn-prim" onclick="markAllReleased()">✓ Đánh dấu tất cả đã trả</button>
+    </div>
+  </div>
+</div>
+
 <div id="lockOverlay">
   <div class="lockbox">
     <div style="font-size:36px">🔄</div>
@@ -904,6 +918,41 @@ function updateSelectedCount(){
     const cb=item.querySelector('input');
     item.classList.toggle('checked', cb.checked);
   });
+}
+function openUnreleased(){
+  const todayStr=ymd(new Date());
+  const list=bookings.filter(b=>
+    !b.released && !b.cancelled && b.status!=='rejected' && !b.recurring &&
+    b.date < todayStr
+  ).sort((a,b)=>a.date>b.date?-1:1);
+  const wrap=document.getElementById('unreleasedList');
+  if(!list.length){
+    wrap.innerHTML='<div style="text-align:center;color:var(--mut);padding:32px">✅ Không có lịch nào chưa trả phòng.</div>';
+  } else {
+    wrap.innerHTML=list.map(b=>{
+      const r=roomById(b.roomId)||{name:'?'};
+      const d=parseYmd(b.date);
+      return `<div style="display:flex;justify-content:space-between;align-items:center;background:#fff9f9;border:1px solid #fecaca;border-radius:10px;padding:10px 14px;gap:10px">
+        <div>
+          <div style="font-weight:700;font-size:14px">🏛️ ${esc(r.name)} · ${fmtVNDate(d)}</div>
+          <div style="font-size:13px;color:var(--mut)">🕐 ${b.start}–${b.end} · 👤 ${esc(b.name)} (${esc(b.dept)})</div>
+          ${b.purpose?`<div style="font-size:12px;color:#94A3B8">${esc(b.purpose)}</div>`:''}
+        </div>
+        <button class="act btn-soft" style="white-space:nowrap;font-size:12px" onclick="releaseNow('${b.id}');openUnreleased()">Đã trả</button>
+      </div>`;
+    }).join('');
+  }
+  document.getElementById('unreleasedOv').classList.add('on');
+}
+function closeUnreleased(){ document.getElementById('unreleasedOv').classList.remove('on'); }
+async function markAllReleased(){
+  const todayStr=ymd(new Date());
+  const list=bookings.filter(b=>!b.released&&!b.cancelled&&b.status!=='rejected'&&!b.recurring&&b.date<todayStr);
+  if(!list.length){ toast('Không có lịch nào cần đánh dấu.'); return; }
+  if(!confirm(`Đánh dấu tất cả ${list.length} lịch là đã trả phòng?`))return;
+  const now=new Date().toISOString();
+  list.forEach(b=>{ b.released=true; b.releasedAt=now; b.releasedBy='(admin bulk)'; dbSaveBooking(b); });
+  render(); closeUnreleased(); toast(`Đã đánh dấu ${list.length} lịch trả phòng.`);
 }
 function closeRestoreSelect(){
   document.getElementById('restoreSelectOv').classList.remove('on');
@@ -1737,9 +1786,15 @@ async function releaseNow(id){
       return;
     }
   }
-  if(!confirm(`Trả phòng "${roomById(b.roomId).name}" ngay bây giờ?`))return;
-  const now=Math.max(Math.ceil(nowMin()/STEP)*STEP, mins(b.start)+STEP);
-  b.end=toHM(Math.min(now,CLOSE));
+  const isPast = b.date < ymd(new Date());
+  const msg = isPast
+    ? `Đánh dấu đã trả phòng "${roomById(b.roomId).name}" vào ngày ${b.date}?`
+    : `Trả phòng "${roomById(b.roomId).name}" ngay bây giờ?`;
+  if(!confirm(msg))return;
+  if(!isPast){
+    const now=Math.max(Math.ceil(nowMin()/STEP)*STEP, mins(b.start)+STEP);
+    b.end=toHM(Math.min(now,CLOSE));
+  }
   b.released=true;
   b.releasedAt=new Date().toISOString();
   let rb=''; try{ rb=localStorage.getItem('ph_name')||''; }catch(e){}
@@ -1768,8 +1823,10 @@ function openDetail(id){
      <div><b>Số người:</b> ${esc(b.people||'?')}</div>
      <div style="color:var(--mut);font-size:12.5px;margin-top:4px">🕐 Đặt lúc: ${b.createdAt ? (()=>{ const dt=new Date(b.createdAt); const p=n=>String(n).padStart(2,'0'); return p(dt.getDate())+'/'+p(dt.getMonth()+1)+'/'+dt.getFullYear()+' lúc '+p(dt.getHours())+':'+p(dt.getMinutes())+':'+p(dt.getSeconds()); })() : '—'}</div>${grpNote}`;
   const ongoing = !pend && !fixed && b.date===ymd(new Date()) && mins(b.start)<=nowMin() && nowMin()<mins(b.end) && !b.released;
+  const pastUnreleased = !pend && !fixed && !b.released && !b.cancelled && b.date < ymd(new Date());
   document.getElementById('dApproveBtn').style.display = (isAdmin && pend) ? '' : 'none';
-  document.getElementById('dRelBtn').style.display = ongoing ? '' : 'none';
+  document.getElementById('dRelBtn').style.display = (ongoing || (pastUnreleased && isAdmin)) ? '' : 'none';
+  document.getElementById('dRelBtn').textContent = pastUnreleased ? 'Đánh dấu đã trả phòng' : 'Trả phòng ngay';
   const canEdit = !fixed && !b.released && !hasStarted(b) && isOwnerOrAdmin(b);
   document.getElementById('dEditBtn').style.display = canEdit ? '' : 'none';
   document.getElementById('dSkipBtn').style.display = (isAdmin && fixed) ? '' : 'none';
@@ -1929,6 +1986,7 @@ function refreshAdminUI(){
   const lml=document.getElementById('lockManageLink'); if(lml) lml.style.display = isAdmin ? '' : 'none';
   const mrl=document.getElementById('manageRoomsLink'); if(mrl) mrl.style.display = isAdmin ? '' : 'none';
   const rsl=document.getElementById('restoreLink'); if(rsl) rsl.style.display = isAdmin ? '' : 'none';
+  const url=document.getElementById('unreleasedLink'); if(url) url.style.display = isAdmin ? '' : 'none';
   const fl=document.getElementById('forceReloadLink'); if(fl) fl.style.display = isAdmin ? '' : 'none';
 }
 function updateBell(){
