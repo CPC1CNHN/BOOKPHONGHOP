@@ -880,6 +880,8 @@ function openManageRooms(){
 function openEditRoom(roomId){
   if(!isAdmin){ toast('Chỉ Admin.'); return; }
   const r=ROOMS.find(x=>x.id===roomId); if(!r){ toast('Không tìm phòng.'); return; }
+  // Đóng tempOv (danh sách chọn phòng) trước khi mở form edit
+  const tmp=document.getElementById('tempOv'); if(tmp) tmp.remove();
   document.getElementById('erRoomId').value=r.id;
   document.getElementById('erName').value=r.name;
   document.getElementById('erSub').value=r.sub||'';
@@ -924,7 +926,7 @@ function openRestoreSelect(){
   cancelled.forEach(b=>{
     const r=roomById(b.roomId);
     const cancelTimeStr = b.cancelledAt
-      ? `<span style="color:#c0392b;font-weight:700">🗑️ Huỷ: ${fmtDT(b.cancelledAt)}</span>`
+      ? `<span style="color:#c0392b;font-weight:700">🗑️ Huỷ: ${fmtDT(b.cancelledAt)}${b.cancelledBy?' · bởi <b>'+esc(b.cancelledBy)+'</b>':''}</span>`
       : `<span style="color:#94A3B8;font-style:italic">Chưa rõ thời gian huỷ</span>`;
     html+=`<label class="restore-item">
       <input type="checkbox" class="restore-check" value="${b.id}" onchange="updateSelectedCount()">
@@ -1893,7 +1895,7 @@ async function cancelCurrent(){
   if(!isOwnerOrAdmin(b)){ toast('Chỉ người đăng ký hoặc Admin mới huỷ được lượt này.'); return; }
   if(!isAdmin && hasStarted(b)){ toast('Cuộc họp đã bắt đầu — không huỷ được, hãy dùng "Trả phòng".'); return; }
   if(!confirm('Huỷ lượt đặt này?'))return;
-  b.cancelled=true; b.cancelledAt=new Date().toISOString(); dbSaveBooking(b);
+  b.cancelled=true; b.cancelledAt=new Date().toISOString(); b.cancelledBy=(isAdmin && getSavedName()!==b.name) ? 'Admin' : (getSavedName()||b.name); dbSaveBooking(b);
   closeOv2(); render(); updateBell(); toast('Đã huỷ lượt đặt.');
 }
 async function resetAll(){
@@ -2097,7 +2099,7 @@ async function rejectGroup(gid){
 async function cancelGroup(gid){
   if(!isAdmin){ toast('Chỉ Admin mới được huỷ lịch.'); return; }
   if(!confirm('Huỷ toàn bộ các ngày trong nhóm đăng ký này?'))return;
-  const _ca=new Date().toISOString(); bookings.filter(b=>b.groupId===gid && !b.cancelled).forEach(b=>{ b.cancelled=true; b.cancelledAt=_ca; dbSaveBooking(b); });
+  const _ca=new Date().toISOString(); const _cb=(isAdmin && getSavedName()!==bookings.find(x=>x.groupId===gid)?.name)?'Admin':(getSavedName()||''); bookings.filter(b=>b.groupId===gid && !b.cancelled).forEach(b=>{ b.cancelled=true; b.cancelledAt=_ca; b.cancelledBy=_cb; dbSaveBooking(b); });
   closeOv2(); render(); updateBell(); toast('Đã huỷ cả nhóm.');
 }
 function cancelGroupFromDetail(){ const b=findAny(detailId); if(b&&b.groupId) cancelGroup(b.groupId); }
