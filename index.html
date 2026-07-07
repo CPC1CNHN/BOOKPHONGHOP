@@ -264,6 +264,26 @@
   .cnt{display:none;font-size:10.5px;font-weight:700;color:var(--teal-d)}
   @media(max-width:560px){ .mcell{min-height:74px;padding:3px} .mchip,.mmore{display:none} .mcell .cnt{display:block} }
 
+  /* Admin panel */
+  #adminPanel{ display:none }
+  #adminPanel.on{ display:flex !important }
+  .apbtn{
+    background:rgba(255,255,255,.08);
+    border:none;border-radius:8px;
+    color:#e2e8f0;font-size:12.5px;font-weight:600;
+    padding:7px 10px;text-align:left;cursor:pointer;
+    transition:background .15s;white-space:nowrap;
+  }
+  .apbtn:hover{ background:rgba(255,255,255,.18) }
+  .apbtn-warn{ color:#fbbf24 }
+  .apbtn-warn:hover{ background:rgba(251,191,36,.15) }
+  .apbtn-danger{ color:#f87171 }
+  .apbtn-danger:hover{ background:rgba(248,113,113,.15) }
+  @media(max-width:600px){
+    #adminPanel{ top:auto !important; bottom:70px; left:8px !important; right:8px; min-width:0 }
+    .apbtn{ font-size:13px; padding:9px 12px }
+  }
+
   @media(max-width:600px){
     /* ===== LAYOUT ===== */
     body{font-size:15px}
@@ -453,8 +473,19 @@
 
   <footer>
     Lịch được lưu chung và đồng bộ thời gian thực cho mọi người · Giờ mở cửa 08:00–22:00, Thứ 2 đến Thứ 7 · <b>Phiên bản 32.0</b>
-    <br><button class="link" onclick="enableNotify()">🔔 Bật thông báo trên trình duyệt</button> · <button class="link" onclick="forgetMe()">Quên Họ tên/Phòng ban đã lưu</button> · <button class="link" id="lockManageLink" style="display:none" onclick="openManageLocks()">🔐 Quản lý khóa phòng ban</button> · <button class="link" id="manageRoomsLink" style="display:none" onclick="openManageRooms()">⚙️ Quản lý phòng</button> · <button class="link" id="unreleasedLink" style="display:none" onclick="openUnreleased()">⚠️ Chưa trả phòng</button> · <button class="link" id="restoreLink" style="display:none" onclick="openRestoreSelect()">♻️ Khôi phục dữ liệu bị huỷ</button> · <button class="link" id="forceReloadLink" style="display:none" onclick="forceReloadAll()">🔄 Buộc mọi người tải lại bản mới</button> · <button class="link" id="resetLink" style="display:none" onclick="resetAll()">Xoá toàn bộ lịch đặt</button>
+    <br><button class="link" onclick="enableNotify()">🔔 Bật thông báo trên trình duyệt</button> · <button class="link" onclick="forgetMe()">Quên Họ tên/Phòng ban đã lưu</button>
   </footer>
+
+  <!-- Admin quick-access panel (top-left, chỉ hiện khi Admin) -->
+  <div id="adminPanel" style="display:none;position:fixed;top:12px;left:12px;z-index:900;background:rgba(17,30,54,0.96);backdrop-filter:blur(8px);border-radius:14px;padding:10px 14px;display:flex;flex-direction:column;gap:6px;box-shadow:0 4px 24px rgba(0,0,0,.35);min-width:200px">
+    <div style="font-size:11px;font-weight:700;color:rgba(255,255,255,.45);letter-spacing:.08em;text-transform:uppercase;margin-bottom:2px">⚙ Quản trị</div>
+    <button class="apbtn" id="lockManageLink" onclick="openManageLocks()">🔐 Quản lý khóa phòng ban</button>
+    <button class="apbtn" id="manageRoomsLink" onclick="openManageRooms()">🏛️ Quản lý phòng</button>
+    <button class="apbtn apbtn-warn" id="unreleasedLink" onclick="openUnreleased()">⚠️ Chưa trả phòng</button>
+    <button class="apbtn" id="restoreLink" onclick="openRestoreSelect()">♻️ Khôi phục dữ liệu bị huỷ</button>
+    <button class="apbtn" id="forceReloadLink" onclick="forceReloadAll()">🔄 Buộc mọi người tải lại</button>
+    <button class="apbtn apbtn-danger" id="resetLink" onclick="resetAll()">🗑 Xoá toàn bộ lịch đặt</button>
+  </div>
 </div>
 
 <!-- Booking modal -->
@@ -1983,6 +2014,7 @@ function refreshAdminUI(){
   document.getElementById('bell').style.display = isAdmin ? 'inline-flex' : 'none';
   document.getElementById('recurBtn').style.display = isAdmin ? 'inline-flex' : 'none';
   const rl=document.getElementById('resetLink'); if(rl) rl.style.display = isAdmin ? '' : 'none';
+  const ap=document.getElementById('adminPanel'); if(ap){ if(isAdmin) ap.classList.add('on'); else ap.classList.remove('on'); }
   const lml=document.getElementById('lockManageLink'); if(lml) lml.style.display = isAdmin ? '' : 'none';
   const mrl=document.getElementById('manageRoomsLink'); if(mrl) mrl.style.display = isAdmin ? '' : 'none';
   const rsl=document.getElementById('restoreLink'); if(rsl) rsl.style.display = isAdmin ? '' : 'none';
