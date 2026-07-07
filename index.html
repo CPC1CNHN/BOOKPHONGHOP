@@ -1857,8 +1857,10 @@ function openDetail(id){
      <div style="color:var(--mut);font-size:12.5px;margin-top:4px">🕐 Đặt lúc: ${b.createdAt ? (()=>{ const dt=new Date(b.createdAt); const p=n=>String(n).padStart(2,'0'); return p(dt.getDate())+'/'+p(dt.getMonth()+1)+'/'+dt.getFullYear()+' lúc '+p(dt.getHours())+':'+p(dt.getMinutes())+':'+p(dt.getSeconds()); })() : '—'}</div>${grpNote}`;
   const ongoing = !pend && !fixed && b.date===ymd(new Date()) && mins(b.start)<=nowMin() && nowMin()<mins(b.end) && !b.released;
   const pastUnreleased = !pend && !fixed && !b.released && !b.cancelled && b.date < ymd(new Date());
+  const isOwner = (getSavedName()||'').normalize('NFC').trim().toLowerCase() === (b.name||'').normalize('NFC').trim().toLowerCase();
   document.getElementById('dApproveBtn').style.display = (isAdmin && pend) ? '' : 'none';
-  document.getElementById('dRelBtn').style.display = (ongoing || (pastUnreleased && isAdmin)) ? '' : 'none';
+  // Hiện nút trả phòng: đang họp (chủ phòng hoặc admin), hoặc ngày cũ chưa trả (admin)
+  document.getElementById('dRelBtn').style.display = (ongoing && (isOwner || isAdmin)) || (pastUnreleased && isAdmin) ? '' : 'none';
   document.getElementById('dRelBtn').textContent = pastUnreleased ? 'Đánh dấu đã trả phòng' : 'Trả phòng ngay';
   const canEdit = !fixed && !b.released && !hasStarted(b) && isOwnerOrAdmin(b);
   document.getElementById('dEditBtn').style.display = canEdit ? '' : 'none';
