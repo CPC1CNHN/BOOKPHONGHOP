@@ -1852,6 +1852,13 @@ async function releaseNow(id){
   b.releasedBy=rb||b.name;
   myReleases.add(id);
   dbSaveBooking(b); render(); updateBell();
+  // Ẩn banner ngay lập tức sau khi trả phòng
+  const bar=document.getElementById('remindBar');
+  if(bar){
+    const stillOver=bar.querySelectorAll('.rm-item.over');
+    stillOver.forEach(el=>{ if(el.textContent.includes(b.roomId)||el.innerHTML.includes(b.id)) el.remove(); });
+    if(!bar.querySelector('.rm-item')) bar.classList.remove('on');
+  }
   // Cập nhật modal chi tiết ngay nếu đang mở
   if(detailId===id){
     const relTime=(()=>{ const dt=new Date(b.releasedAt); const p=n=>String(n).padStart(2,'0'); return p(dt.getHours())+':'+p(dt.getMinutes()+':'+p(dt.getSeconds())); })();
@@ -2177,6 +2184,20 @@ function forgetMe(){
   try{ localStorage.removeItem('ph_name'); localStorage.removeItem('ph_dept'); }catch(e){}
   toast('Đã quên Họ tên & Phòng ban đã lưu trên thiết bị này.');
 }
+function forceRefreshReminders(){
+  // Đọc lại trạng thái released từ Firebase rồi clear banner ngay
+  if(!USE_FB) { checkReminders(); return; }
+  const bar=document.getElementById('remindBar');
+  const today=ymd(new Date()), now=nowMin();
+  // Kiểm tra từng booking đang hiện trong banner — nếu đã released thì ẩn ngay
+  const stillOver = live().filter(b=>{
+    if(isPending(b)||b.released||b.date!==today) return false;
+    const e=mins(b.end);
+    return e<=now && e>now-30;
+  });
+  if(!stillOver.length && bar){ bar.classList.remove('on'); bar.innerHTML=''; }
+  else checkReminders();
+}
 function checkReminders(){
   const today=ymd(new Date()), now=nowMin();
   const soon=[], over=[];
@@ -2267,7 +2288,7 @@ function init(){
   refreshAdminUI();
   render(); updateBell();
   initData();                     // kết nối Firebase (hoặc cục bộ) + lắng nghe thời gian thực
-  setInterval(checkReminders, 30000);
+  setInterval(checkReminders, 10000); // Kiểm tra mỗi 10 giây để xóa banner kịp thời
 }
 const _afterData = afterData;
 afterData = function(){ _afterData(); afterDataNotify(); };
