@@ -1820,10 +1820,7 @@ async function releaseNow(id){
     }
   }
   const isPast = b.date < ymd(new Date());
-  const msg = isPast
-    ? `Đánh dấu đã trả phòng "${roomById(b.roomId).name}" vào ngày ${b.date}?`
-    : `Trả phòng "${roomById(b.roomId).name}" ngay bây giờ?`;
-  if(!confirm(msg))return;
+  // Không cần confirm — trả phòng ngay lập tức
   if(!isPast){
     const now=Math.max(Math.ceil(nowMin()/STEP)*STEP, mins(b.start)+STEP);
     b.end=toHM(Math.min(now,CLOSE));
@@ -1831,9 +1828,24 @@ async function releaseNow(id){
   b.released=true;
   b.releasedAt=new Date().toISOString();
   let rb=''; try{ rb=localStorage.getItem('ph_name')||''; }catch(e){}
-  b.releasedBy=rb;
+  b.releasedBy=rb||b.name;
   myReleases.add(id);
-  dbSaveBooking(b); render(); updateBell(); toast('Đã trả phòng.');
+  dbSaveBooking(b); render(); updateBell();
+  // Cập nhật modal chi tiết ngay nếu đang mở
+  if(detailId===id){
+    const relTime=(()=>{ const dt=new Date(b.releasedAt); const p=n=>String(n).padStart(2,'0'); return p(dt.getHours())+':'+p(dt.getMinutes()+':'+p(dt.getSeconds())); })();
+    const dRelBtn=document.getElementById('dRelBtn'); if(dRelBtn) dRelBtn.style.display='none';
+    // Thêm dòng trả phòng vào body nếu chưa có
+    const dBody=document.getElementById('dBody');
+    if(dBody && !dBody.querySelector('.released-row')){
+      const row=document.createElement('div');
+      row.className='released-row';
+      row.style.cssText='color:#16A34A;font-weight:700;font-size:13px;margin-top:6px;padding:7px 10px;background:#f0fdf4;border-radius:8px;border:1px solid #bbf7d0';
+      row.innerHTML=`✅ Đã trả phòng lúc <b>${b.end}</b> · ${new Date(b.releasedAt).toLocaleTimeString('vi-VN')}`;
+      dBody.appendChild(row);
+    }
+  }
+  toast('✅ Đã trả phòng lúc ' + b.end);
 }
 function openDetail(id){
   const b=findAny(id); if(!b)return;
