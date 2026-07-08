@@ -266,8 +266,8 @@
 
   /* ===== DIARY PANEL ===== */
   #diaryPanel{
-    position:fixed; top:80px; left:12px; z-index:800;
-    width:220px; background:#fff;
+    position:fixed; top:80px; right:12px; z-index:800;
+    width:230px; background:#fff;
     border:1.5px solid #e2e8f0; border-radius:16px;
     box-shadow:0 4px 20px rgba(0,0,0,.10);
     display:none; flex-direction:column; overflow:hidden;
@@ -299,7 +299,7 @@
   .dp-btn.release:hover{ background:#dc2626 }
   .dp-empty{ text-align:center; color:#94a3b8; padding:18px 10px; font-size:12.5px }
   @media(max-width:600px){
-    #diaryPanel{ top:auto; bottom:80px; left:8px; right:8px; width:auto }
+    #diaryPanel{ top:auto; bottom:80px; left:8px; right:8px; width:auto; max-width:none }
   }
 
   /* Admin panel */
@@ -902,6 +902,7 @@ function addMonths(d,n){return new Date(d.getFullYear(),d.getMonth()+n,1)}
 
 /* ---------- Lưu trữ dùng chung (Firebase / localStorage) ---------- */
 function afterData(){
+  checkOverdueAndNotify(); // Kiểm tra ngay khi tải trang
   // Đọc thời gian deploy từ Firebase
   if(USE_FB){
     fdb.ref('config/deployTime').once('value', snap=>{
@@ -1250,7 +1251,7 @@ function initData(){
     bar.innerHTML='⚠️ <b>Chế độ thử nghiệm:</b> chưa kết nối cơ sở dữ liệu nên dữ liệu chỉ lưu trên máy này, người khác chưa xem chung được. Mở file, điền cấu hình Firebase ở mục CONFIG (xem file HUONG-DAN-CAI-DAT) để dùng chung toàn công ty.';
     lsLoad(); afterData();
     // Kiểm tra booking hết giờ và gửi email mỗi 5 phút
-    setInterval(checkOverdueAndNotify, 5*60*1000);
+    setInterval(checkOverdueAndNotify, 60*1000); // Kiểm tra mỗi phút
   }
 }
 
@@ -1266,37 +1267,33 @@ function getStartAndEndTime(){
 }
 
 function checkOverdueAndNotify(){
-  if(!USE_FB || !NOTIFY_HOOK) return;
   const today=ymd(new Date()), now=nowMin();
   live().forEach(b=>{
     if(b.released || b.cancelled || b.date!==today || b.recurring) return;
     const e=mins(b.end);
-    const overdueMin = now - e; // số phút quá giờ
-    
-    // 1. Gửi email khi hết giờ (lần đầu)
-    if(e<=now && !b.notifiedSchedule){
-      b.notifiedSchedule=true;
-      dbSaveBooking(b);
+    const overdueMin = now - e;
+    if(overdueMin < 0) return;
+
+    // 1. Gửi email khi hết giờ (lần đầu, chỉ khi có NOTIFY_HOOK)
+    if(USE_FB && NOTIFY_HOOK && e<=now && !b.notifiedSchedule){
+      b.notifiedSchedule=true; dbSaveBooking(b);
       if(b.email){
         const r=roomById(b.roomId);
-        fetch(NOTIFY_HOOK,{
-          method:'POST',
-          headers:{'Content-Type':'application/json'},
+        fetch(NOTIFY_HOOK,{method:'POST',headers:{'Content-Type':'application/json'},
           body:JSON.stringify({to:b.email,name:b.name,dept:b.dept,room:r.name,loc:r.loc||'',date:b.date,start:b.start,end:b.end,purpose:b.purpose||''})
         }).catch(()=>{});
       }
     }
-    
-    // 2. Tự động trả phòng sau 10 phút quá giờ
-    if(overdueMin>=10 && !b.released && !b.autoReleased){
+
+    // 2. Khóa người dùng sau 15 phút quá giờ chưa trả phòng
+    if(overdueMin >= 15 && !b.autoReleased){
       b.released=true;
       b.autoReleased=true;
       b.autoReleasedAt=new Date().toISOString();
-      b.lockUntil=new Date(Date.now()+30*60*1000).toISOString(); // lock 30 phút
+      b.releasedBy='(hệ thống tự động)';
       dbSaveBooking(b);
-      // Khóa NGƯỜI DỰA VÀO TÊN (chứ không phải phòng ban)
-      if(b.name) lockUser(b.name, b.dept, b.roomId, b.date, b.end);
-      console.warn(`[Auto-Release] Phòng ${roomById(b.roomId).name} - ${b.name} đã quá giờ ${overdueMin} phút, tự động trả + khóa người dùng`);
+      if(b.name){ lockUser(b.name, b.dept, b.roomId, b.date, b.end); render(); }
+      console.warn('[Auto-Lock]', b.name, 'quá giờ', overdueMin, 'phút →  khóa');
     }
   });
 }
@@ -1536,6 +1533,18 @@ function fillSelect(el,from){
   slots().forEach(m=>{ if(m>=from){const o=document.createElement('option');o.value=toHM(m);o.textContent=toHM(m);el.appendChild(o);} });
 }
 function openBook(roomId,date,suggestStart){
+  // Kiểm tra xem người dùng có bị khóa không
+  const myName=getSavedName();
+  if(myName){
+    const lockInfo=isUserLocked(myName);
+    if(lockInfo){
+      const p=n=>String(n).padStart(2,'0');
+      const dt=new Date(lockInfo.lockedAt);
+      const lockedTime=p(dt.getDate())+'/'+p(dt.getMonth()+1)+' lúc '+p(dt.getHours())+':'+p(dt.getMinutes());
+      alert('🔒 Tài khoản của bạn bị khóa đặt phòng\n\nLý do: Không trả phòng '+lockInfo.room+' đúng giờ (hết lúc '+lockInfo.end+' ngày '+lockInfo.date+').\n\nVui lòng liên hệ Admin để được mở khóa.');
+      return;
+    }
+  }
   const d=parseYmd(date);
   if(!isWorkingDate(d)){ toast('Chủ Nhật ngoài giờ mở cửa.'); return; }
   editingId=null;
@@ -1676,6 +1685,12 @@ function hasStarted(b){
   if(b.date<today) return true;
   if(b.date>today) return false;
   return nowMin()>=mins(b.start);
+}
+function hasEnded(b){
+  const today=ymd(new Date());
+  if(b.date<today) return true;
+  if(b.date>today) return false;
+  return nowMin()>=mins(b.end);
 }
 function getSavedName(){
   try{ return localStorage.getItem('ph_name')||''; }catch(e){ return ''; }
@@ -1986,7 +2001,8 @@ function openDetail(id){
   document.getElementById('dDelRuleBtn').style.display = (isAdmin && fixed) ? '' : 'none';
   document.getElementById('dGroupBtn').style.display = (grpCount>1 && !fixed && isAdmin) ? '' : 'none';
   document.getElementById('dGroupBtn').textContent = 'Huỷ cả nhóm ('+grpCount+' ngày)';
-  const canCancel = !fixed && !b.released && !b.cancelled;
+  // Người dùng: chỉ huỷ khi chưa bắt đầu. Admin: huỷ bất kỳ lúc nào
+  const canCancel = !fixed && !b.released && !b.cancelled && (isAdmin || !hasStarted(b));
   const dc=document.getElementById('dCancelBtn');
   dc.style.display = canCancel ? '' : 'none';
   dc.textContent = isAdmin ? (pend ? 'Từ chối ngày này' : 'Huỷ ngày này') : 'Huỷ lượt đặt của tôi';
@@ -2013,7 +2029,8 @@ async function cancelCurrent(){
   const b=bookings.find(x=>x.id===detailId);
   if(!b){ closeOv2(); return; }
   if(!isOwnerOrAdmin(b)){ toast('Chỉ người đăng ký hoặc Admin mới huỷ được lượt này.'); return; }
-  if(!isAdmin && hasStarted(b)){ toast('Cuộc họp đã bắt đầu — không huỷ được, hãy dùng "Trả phòng".'); return; }
+  if(!isAdmin && hasEnded(b)){ toast('Lịch đã kết thúc — chỉ Admin mới được thay đổi lịch sử.'); return; }
+  if(!isAdmin && hasStarted(b)){ toast('Cuộc họp đang diễn ra — hãy dùng "Trả phòng" thay vì huỷ.'); return; }
   // Confirm handled inline
   b.cancelled=true; b.cancelledAt=new Date().toISOString(); b.cancelledBy=(isAdmin && getSavedName()!==b.name) ? 'Admin' : (getSavedName()||b.name); dbSaveBooking(b);
   closeOv2(); render(); updateBell(); toast('Đã huỷ lượt đặt.');
@@ -2369,13 +2386,22 @@ function renderDiary(){
   const dpBody=document.getElementById('dpBody');
   if(!panel||!dpBody) return;
 
-  if(!mine.length){
+  // Check if user is locked
+  const lockInfo = name ? isUserLocked(name) : null;
+  if(!mine.length && !lockInfo){
     panel.classList.remove('on');
     return;
   }
   panel.classList.add('on');
+  let lockHtml='';
+  if(lockInfo){
+    lockHtml=`<div style="background:#fff1f2;border:1.5px solid #fecaca;border-radius:10px;padding:10px 12px;margin-bottom:8px">
+      <div style="font-weight:800;color:#dc2626;margin-bottom:4px">🔒 Tài khoản bị khóa</div>
+      <div style="font-size:12px;color:#b91c1c">Không trả phòng <b>${esc(lockInfo.room)}</b> đúng giờ (hết ${lockInfo.end}).<br>Liên hệ Admin để mở khóa.</div>
+    </div>`;
+  }
 
-  dpBody.innerHTML=mine.map(b=>{
+  dpBody.innerHTML=lockHtml+mine.map(b=>{
     const r=roomById(b.roomId)||{name:'?'};
     const s=mins(b.start), e=mins(b.end);
     const started=s<=now, ended=e<=now;
