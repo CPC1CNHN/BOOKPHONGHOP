@@ -472,7 +472,7 @@
   </section>
 
   <footer>
-    Lịch được lưu chung và đồng bộ thời gian thực cho mọi người · Giờ mở cửa 08:00–22:00, Thứ 2 đến Thứ 7 · <b>Phiên bản 32.0</b>
+    Lịch được lưu chung và đồng bộ thời gian thực cho mọi người · Giờ mở cửa 08:00–22:00, Thứ 2 đến Thứ 7 · <b id="versionLabel">Phiên bản 32.0</b>
     <br><button class="link" onclick="enableNotify()">🔔 Bật thông báo trên trình duyệt</button> · <button class="link" onclick="forgetMe()">Quên Họ tên/Phòng ban đã lưu</button>
   </footer>
 
@@ -832,7 +832,25 @@ function lastOfMonth(d){return new Date(d.getFullYear(),d.getMonth()+1,0)}
 function addMonths(d,n){return new Date(d.getFullYear(),d.getMonth()+n,1)}
 
 /* ---------- Lưu trữ dùng chung (Firebase / localStorage) ---------- */
-function afterData(){ render(); updateBell(); if(queueOpen)renderQueue(); }
+function afterData(){
+  // Đọc thời gian deploy từ Firebase
+  if(USE_FB){
+    fdb.ref('config/deployTime').once('value', snap=>{
+      const vl=document.getElementById('versionLabel');
+      if(!vl) return;
+      const stored=snap.val()||{};
+      // Nếu version hiện tại chưa có deployTime → ghi mới (người đầu tiên mở sau khi upload)
+      if(stored.version !== APP_VERSION){
+        const now=new Date();
+        const fmt=n=>String(n).padStart(2,'0');
+        const t=`${fmt(now.getDate())}/${fmt(now.getMonth()+1)}/${now.getFullYear()} lúc ${fmt(now.getHours())}:${fmt(now.getMinutes())}`;
+        fdb.ref('config/deployTime').set({version:APP_VERSION, time:t});
+        vl.innerHTML=`Phiên bản ${APP_VERSION} · <span style="color:var(--teal-d);font-weight:400">Cập nhật ${t}</span>`;
+      } else {
+        vl.innerHTML=`Phiên bản ${APP_VERSION} · <span style="color:var(--teal-d);font-weight:400">Cập nhật ${stored.time}</span>`;
+      }
+    });
+  } render(); updateBell(); if(queueOpen)renderQueue(); }
 
 // ----- Bản dự phòng cục bộ (khi chưa cấu hình Firebase) -----
 function lsLoad(){
@@ -1822,8 +1840,11 @@ async function releaseNow(id){
   const isPast = b.date < ymd(new Date());
   // Không cần confirm — trả phòng ngay lập tức
   if(!isPast){
-    const now=Math.max(Math.ceil(nowMin()/STEP)*STEP, mins(b.start)+STEP);
-    b.end=toHM(Math.min(now,CLOSE));
+    // Dùng đúng thời điểm hiện tại, không làm tròn
+    const dt=new Date();
+    const nowExact=dt.getHours()*60+dt.getMinutes();
+    const endMin=Math.min(Math.max(nowExact, mins(b.start)+1), CLOSE);
+    b.end=String(Math.floor(endMin/60)).padStart(2,'0')+':'+String(endMin%60).padStart(2,'0');
   }
   b.released=true;
   b.releasedAt=new Date().toISOString();
