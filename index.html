@@ -2227,7 +2227,7 @@ function toggleDiaryPanel(){
   if(!p) return;
   p.classList.toggle('collapsed');
 }
-function toggleAdmin(){
+async function toggleAdmin(){
   if(isAdmin){
     if(!confirm('Thoát chế độ Admin trên thiết bị này? (lần sau sẽ cần nhập lại mật khẩu)')) return;
     isAdmin=false; setAdminPersist(false); refreshAdminUI(); render(); updateBell(); toast('Đã thoát chế độ Admin.'); return;
