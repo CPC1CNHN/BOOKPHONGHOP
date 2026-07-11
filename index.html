@@ -305,6 +305,7 @@
   /* Admin panel */
   #adminPanel{ display:none }
   #adminPanel.on{ display:flex !important }
+  #adminFab{ display:none }
   .apbtn{
     background:rgba(255,255,255,.08);
     border:none;border-radius:8px;
@@ -322,116 +323,194 @@
     .apbtn{ font-size:13px; padding:9px 12px }
   }
 
-  @media(max-width:600px){
-    /* ===== LAYOUT ===== */
-    body{font-size:15px}
-    .wrap{padding:0 10px 80px}
+  @media(max-width:640px){
+
+    /* ===== GLOBAL ===== */
+    body{font-size:15px;-webkit-text-size-adjust:100%}
+    *{-webkit-tap-highlight-color:transparent}
+    .wrap{padding:0 10px 90px}
 
     /* ===== HEADER ===== */
-    header{border-radius:0;padding:10px 14px}
-    .brand{font-size:15px}
-    .brand .dot{width:26px;height:26px;font-size:15px}
-    .clock .t{font-size:16px}
-    .clock .d{font-size:11px}
-    .hctrl{gap:6px}
-    .hbtn{padding:7px 10px;font-size:12px}
+    header{border-radius:0;padding:0;position:sticky;top:0;z-index:200}
+    .hwrap{padding:8px 12px;gap:6px;align-items:center}
+    .brand{font-size:14px;font-weight:800}
+    .brand .dot{width:26px;height:26px;font-size:15px;flex-shrink:0}
+    .clock{display:none}
+    /* Header buttons scroll ngang */
+    .hctrl{
+      gap:5px;flex-wrap:nowrap;
+      overflow-x:auto;-webkit-overflow-scrolling:touch;
+      scrollbar-width:none;padding-bottom:1px;flex-shrink:1;
+    }
+    .hctrl::-webkit-scrollbar{display:none}
+    .hbtn{padding:6px 10px;font-size:12px;white-space:nowrap;flex-shrink:0;min-height:36px;border-radius:8px}
+    .bellbtn .bcount{font-size:11px;padding:1px 5px}
 
-    /* ===== TABS ===== */
-    .tabs{gap:4px;padding:4px;margin-bottom:12px;width:100%}
-    .tab{padding:9px 12px;font-size:13px;flex:1;text-align:center}
+    /* ===== TAB BAR — thanh tab cố định dưới đáy ===== */
+    .tabs{
+      position:fixed;bottom:0;left:0;right:0;z-index:300;
+      display:flex;flex-direction:row;
+      background:#fff;border-top:1.5px solid #e2e8f0;
+      padding:0 0 env(safe-area-inset-bottom,0);
+      border-radius:0;gap:0;margin:0;
+    }
+    .tab{
+      flex:1;padding:10px 4px 8px;font-size:11px;font-weight:700;
+      border-radius:0;border:none;text-align:center;
+      display:flex;flex-direction:column;align-items:center;gap:3px;
+    }
+    .tab.on{color:var(--teal);border-top:2.5px solid var(--teal);background:#f0fdf9}
+    /* Thêm icon cho tab */
+    .tab[data-view="today"]::before{content:"📋";font-size:16px}
+    .tab[data-view="week"]::before{content:"📅";font-size:16px}
+    .tab[data-view="month"]::before{content:"🗓";font-size:16px}
 
-    /* ===== CARDS ===== */
-    .grid{grid-template-columns:1fr}
-    .room{padding:12px;gap:8px}
-    .room-name{font-size:15px}
-    .room-sub,.meta{font-size:12px}
-    .room-actions{gap:6px}
-    .room-actions button{font-size:13px;padding:10px 8px;min-height:44px}
+    /* ===== TODAY NAV BAR ===== */
+    .bar{gap:5px;flex-wrap:wrap;align-items:center}
+    .bar h2{font-size:14px;font-weight:800;flex:1;min-width:0;
+      overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .bar > button{padding:6px 10px;font-size:12px;min-height:34px}
+    .bar label.weekpick{font-size:11px;display:flex;align-items:center;gap:4px}
+    #viewDayPicker{font-size:13px;padding:3px 6px;min-height:30px;border-radius:6px}
+    .legend{font-size:10.5px;gap:5px;align-items:center}
+    .legend i{width:8px;height:8px;border-radius:2px;flex-shrink:0}
+
+    /* ===== CARDS (HÔM NAY) ===== */
+    .grid{grid-template-columns:1fr 1fr;gap:8px}
+    .room{padding:10px 9px;gap:5px;border-radius:12px}
+    .room-name{font-size:13px;font-weight:800;line-height:1.2}
+    .room-sub{font-size:10.5px;margin-top:-2px}
+    .meta{font-size:11px;gap:4px;flex-wrap:wrap}
+    .badge{font-size:10px;padding:2px 7px;border-radius:20px}
+    .loc-hint{font-size:10px}
+    .cur-bk{font-size:11px;padding:5px 7px;border-radius:7px;line-height:1.35}
+    .cur-bk b{font-size:12px}
+    .room-actions{gap:5px;margin-top:2px}
+    .room-actions button{font-size:12px;padding:8px 4px;min-height:42px;border-radius:8px;flex:1}
+    .floor-h{font-size:13px;padding:8px 10px;font-weight:800}
+    .floor{margin-bottom:12px}
+    .empty-state{font-size:13px;padding:24px 16px}
 
     /* ===== MODAL — BOTTOM SHEET ===== */
-    .ov{padding:0;align-items:flex-end}
-    .modal{
-      border-radius:20px 20px 0 0;
-      max-width:100%;
-      max-height:92vh;
-      display:flex;
-      flex-direction:column;
-      animation:slideUp .22s ease;
+    .ov{padding:0 !important;align-items:flex-end !important}
+    .box,.modal{
+      border-radius:20px 20px 0 0 !important;
+      max-width:100% !important; width:100% !important;
+      max-height:93vh;display:flex;flex-direction:column;
+      animation:slideUp .2s cubic-bezier(.4,0,.2,1);
     }
     @keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
-    .modal h3{
-      padding:14px 16px 12px;
-      font-size:16px;
-      position:relative;
+    /* Drag handle */
+    .modal h3::before,.box h3::before{
+      content:"";display:block;width:40px;height:4px;
+      background:rgba(255,255,255,.35);border-radius:2px;margin:0 auto 10px;
     }
-    .modal h3::before{
-      content:;
-      display:block;
-      width:40px;height:4px;
-      background:rgba(255,255,255,.35);
-      border-radius:2px;
-      margin:0 auto 10px;
-    }
-    .mbody{
-      padding:14px 16px;
-      gap:11px;
-      overflow-y:auto;
-      flex:1;
-      -webkit-overflow-scrolling:touch;
-    }
-    .mfoot{padding:12px 16px 20px;gap:8px}
-    .mfoot button{min-height:48px;font-size:15px;font-weight:700}
+    .modal h3,.box h3{padding:14px 16px 10px;font-size:16px;font-weight:800}
+    .mbody{padding:14px 16px;gap:12px;overflow-y:auto;flex:1;
+      -webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+    .mfoot{padding:12px 16px calc(12px + env(safe-area-inset-bottom,0));gap:8px}
+    .mfoot button{min-height:50px;font-size:15px;font-weight:800;border-radius:12px}
 
     /* ===== FORM INPUTS ===== */
-    label{font-size:13px}
+    label{font-size:13px;font-weight:600}
     input,select,textarea{
-      font-size:16px; /* Ngăn iOS zoom khi focus */
-      padding:11px 12px;
-      min-height:48px;
-      border-radius:10px;
+      font-size:16px !important; /* iOS auto-zoom fix */
+      padding:12px 13px;min-height:50px;border-radius:10px;
     }
+    input[type="time"]{min-height:50px;font-size:16px !important}
+    input[type="checkbox"]{width:20px;height:20px;flex-shrink:0}
     .row2{grid-template-columns:1fr}
-    .booknote{font-size:12.5px;padding:9px 11px}
-    .quickslots button{min-height:52px;font-size:14px}
-    .quickslots button small{font-size:11px}
+    .booknote{font-size:12.5px;padding:10px 12px;border-radius:10px;line-height:1.5}
+    .quickslots{gap:6px}
+    .quickslots button{min-height:56px;font-size:14px;border-radius:10px}
+    .quickslots button small{font-size:11px;display:block;margin-top:2px}
+    .form-group{margin-bottom:12px}
+    .form-group label{font-size:13px;margin-bottom:5px}
+    .form-group input,.form-group select{padding:12px 13px;min-height:50px;font-size:16px !important}
 
     /* ===== LỊCH TUẦN ===== */
-    .weekwrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
-    .week td{min-height:80px;padding:4px 2px;font-size:11px}
-    .c-name .nm{font-size:11px}
-    .c-name .sb{font-size:10px}
-    .bk{font-size:10px;padding:2px 4px}
-    .bk .tm{font-size:9px}
+    .weekwrap{overflow-x:auto;-webkit-overflow-scrolling:touch;
+      border-radius:12px;margin:0 -10px;padding:0 10px}
+    .week{font-size:10px;min-width:480px}
+    .week th{font-size:10px;padding:4px 2px;position:sticky;top:0;background:#fff;z-index:2}
+    .week th,.week td{min-width:55px}
+    .week .room-col{min-width:80px;max-width:80px;font-size:10px}
+    .week td{min-height:65px;padding:2px;font-size:9.5px;vertical-align:top}
+    .c-name .nm{font-size:10px;font-weight:800}
+    .c-name .sb{font-size:8.5px}
+    .bk{font-size:9px;padding:2px 4px;border-radius:4px;line-height:1.3;cursor:pointer}
+    .bk .tm{font-size:8px;font-weight:700}
+    .bk .nm2{font-size:9px;font-weight:700}
+    .bk .ph{font-size:8px}
+    /* Nav tuần */
+    #weekBar{flex-wrap:wrap;gap:5px}
 
     /* ===== LỊCH THÁNG ===== */
-    .mcell{min-height:70px;padding:3px 4px}
+    .mcell{min-height:55px;padding:2px 3px}
     .mchip,.mmore{display:none}
-    .mcell .cnt{display:block;font-size:11px;font-weight:700;color:var(--teal-d)}
+    .mcell .cnt{display:block;font-size:11px;font-weight:800;color:var(--teal-d)}
+    .mhead div{font-size:11px;padding:4px 0}
 
-    /* ===== BAR / REMIND ===== */
-    .bar{gap:7px}
-    .bar h2{font-size:15px}
-    .legend{font-size:11.5px;gap:9px}
-    .rm-item{font-size:13px;padding:9px 11px}
-    .rm-note{font-size:12px;padding:9px 11px}
+    /* ===== REMIND BAR ===== */
+    .rm-item{font-size:12px;padding:9px 11px;flex-wrap:wrap;gap:6px}
+    .rm-item .rmtext{font-size:12px;flex:1;min-width:0}
+    .rmbtn{min-height:38px;font-size:12px;padding:6px 12px;border-radius:8px}
+    .rm-note{font-size:11.5px;padding:9px 11px;line-height:1.5}
 
-    /* ===== DETAIL / QUEUE MODAL ===== */
-    .detail{font-size:13px;padding:10px 12px;gap:6px}
-    .qrow .qh{font-size:13px}
+    /* ===== DETAIL / QUEUE ===== */
+    .detail{font-size:13px;padding:8px 10px;gap:6px;line-height:1.6}
+    .qrow{padding:10px 12px;gap:8px}
+    .qrow .qh{font-size:13px;font-weight:700}
     .qrow .qm{font-size:12px}
-    .qrow .qbtns button{min-height:44px;font-size:13px}
+    .qrow .qbtns{gap:6px;flex-wrap:wrap}
+    .qrow .qbtns button{min-height:44px;font-size:12px;flex:1}
 
-    /* ===== FORM ADMIN (box) ===== */
-    .form-group{margin-bottom:11px}
-    .form-group label{font-size:13px;margin-bottom:5px}
-    .form-group input,.form-group select{padding:11px 12px;min-height:48px;font-size:16px}
+    /* ===== DIARY PANEL — slide từ dưới lên ===== */
+    #diaryPanel{
+      position:fixed !important;
+      top:auto !important; bottom:60px !important;
+      left:8px !important; right:8px !important;
+      width:auto !important; max-width:none !important;
+      border-radius:16px;max-height:50vh;
+    }
+    .dp-head{padding:10px 14px;font-size:13px}
+    .dp-body{max-height:calc(50vh - 50px)}
+    .dp-item{font-size:12.5px;padding:9px 11px}
+    .dp-btn{min-height:42px;font-size:13px}
+
+    /* ===== ADMIN PANEL — bottom sheet on mobile ===== */
+    #adminFab{ display:none !important }
+    #adminPanel{
+      top:auto !important; bottom:68px !important;
+      left:8px !important; right:auto !important;
+      min-width:180px; border-radius:14px !important;
+    }
+    .apbtn{ font-size:13px; padding:9px 12px; border-radius:9px; }
+
+    /* ===== MY HISTORY ===== */
+    #myHistStats{gap:6px}
+    #myHistStats>div{padding:8px;min-width:60px;border-radius:8px}
+    #myHistStats>div div:first-child{font-size:20px}
+    #myHistStats>div div:last-child{font-size:11px}
 
     /* ===== FOOTER ===== */
-    footer{font-size:11.5px;padding:0 4px}
-    .link{font-size:12px}
+    footer{font-size:11px;padding:6px 10px;text-align:center;line-height:1.7}
+    .link{font-size:11.5px}
 
     /* ===== TOAST ===== */
-    #toast{font-size:13px;padding:10px 16px;bottom:16px;max-width:90vw}
+    #toast{
+      font-size:13px;padding:11px 18px;
+      bottom:72px;max-width:92vw;
+      left:4vw;right:4vw;transform:none;
+      border-radius:12px;text-align:center;
+    }
+  }
+
+  /* Màn hình rất nhỏ (iPhone SE, ...) */
+  @media(max-width:380px){
+    .grid{grid-template-columns:1fr}
+    .room-name{font-size:14px}
+    .hbtn{font-size:11px;padding:5px 8px}
   }
   @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
@@ -516,8 +595,14 @@
   </footer>
 
   <!-- Admin quick-access panel (top-left, chỉ hiện khi Admin) -->
-  <div id="adminPanel" style="display:none;position:fixed;top:12px;left:12px;z-index:900;background:rgba(17,30,54,0.96);backdrop-filter:blur(8px);border-radius:14px;padding:10px 14px;display:flex;flex-direction:column;gap:6px;box-shadow:0 4px 24px rgba(0,0,0,.35);min-width:200px">
-    <div style="font-size:11px;font-weight:700;color:rgba(255,255,255,.45);letter-spacing:.08em;text-transform:uppercase;margin-bottom:2px">⚙ Quản trị</div>
+  <!-- Admin FAB button (mobile) -->
+  <button id="adminFab" onclick="toggleAdminPanel()" style="display:none;position:fixed;bottom:68px;left:12px;z-index:910;width:44px;height:44px;border-radius:50%;background:rgba(17,30,54,0.92);border:none;color:#fff;font-size:18px;cursor:pointer;box-shadow:0 2px 12px rgba(0,0,0,.35);align-items:center;justify-content:center">⚙️</button>
+
+  <div id="adminPanel" style="display:none;position:fixed;top:12px;left:12px;z-index:900;background:rgba(17,30,54,0.96);backdrop-filter:blur(8px);border-radius:14px;padding:10px 14px;flex-direction:column;gap:6px;box-shadow:0 4px 24px rgba(0,0,0,.35);min-width:200px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px;cursor:pointer" onclick="toggleAdminPanel()">
+      <div style="font-size:11px;font-weight:700;color:rgba(255,255,255,.45);letter-spacing:.08em;text-transform:uppercase">⚙ Quản trị</div>
+      <span id="adminPanelChevron" style="color:rgba(255,255,255,.4);font-size:14px;transition:transform .2s">▲</span>
+    </div>
     <button class="apbtn" id="lockManageLink" onclick="openManageLocks()">🔐 Quản lý khóa phòng ban</button>
     <button class="apbtn" id="manageRoomsLink" onclick="openManageRooms()">🏛️ Quản lý phòng</button>
     <button class="apbtn apbtn-warn" id="unreleasedLink" onclick="openUnreleased()">⚠️ Chưa trả phòng</button>
@@ -793,9 +878,9 @@
 </div>
 
 <div id="diaryPanel">
-  <div class="dp-head">
+  <div class="dp-head" onclick="toggleDiaryPanel()" style="cursor:pointer;user-select:none">
     <span>📅 Lịch của tôi hôm nay</span>
-    <button onclick="document.getElementById('diaryPanel').classList.remove('on')" style="background:none;border:none;color:rgba(255,255,255,.6);font-size:16px;cursor:pointer;padding:0 0 0 8px">✕</button>
+    <span id="diaryChevron" style="color:rgba(255,255,255,.5);font-size:13px;transition:transform .2s">▲</span>
   </div>
   <div class="dp-body" id="dpBody">
     <div class="dp-empty">Không có lịch hôm nay</div>
@@ -2132,7 +2217,17 @@ async function sha256hex(str){
   const buf=await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
   return [...new Uint8Array(buf)].map(b=>b.toString(16).padStart(2,'0')).join('');
 }
-async function toggleAdmin(){
+async function toggleAdminPanel(){
+  const p=document.getElementById('adminPanel');
+  if(!p||!p.classList.contains('on')) return;
+  p.classList.toggle('collapsed');
+}
+function toggleDiaryPanel(){
+  const p=document.getElementById('diaryPanel');
+  if(!p) return;
+  p.classList.toggle('collapsed');
+}
+function toggleAdmin(){
   if(isAdmin){
     if(!confirm('Thoát chế độ Admin trên thiết bị này? (lần sau sẽ cần nhập lại mật khẩu)')) return;
     isAdmin=false; setAdminPersist(false); refreshAdminUI(); render(); updateBell(); toast('Đã thoát chế độ Admin.'); return;
@@ -2153,7 +2248,12 @@ function refreshAdminUI(){
   document.getElementById('bell').style.display = isAdmin ? 'inline-flex' : 'none';
   document.getElementById('recurBtn').style.display = isAdmin ? 'inline-flex' : 'none';
   const rl=document.getElementById('resetLink'); if(rl) rl.style.display = isAdmin ? '' : 'none';
-  const ap=document.getElementById('adminPanel'); if(ap){ if(isAdmin) ap.classList.add('on'); else ap.classList.remove('on'); }
+  const ap=document.getElementById('adminPanel');
+  if(ap){
+    if(isAdmin){ ap.classList.add('on'); if(!ap._wasShown){ ap.classList.add('collapsed'); ap._wasShown=true; } }
+    else { ap.classList.remove('on'); }
+  }
+  const fab=document.getElementById('adminFab'); if(fab) fab.style.display='none';
   // Hiện nút "Lịch của tôi" khi đã có tên lưu
   const mhb=document.getElementById('myHistBtn');
   if(mhb){ mhb.style.display = getSavedName() ? '' : 'none'; } renderDiary();
@@ -2392,7 +2492,7 @@ function renderDiary(){
     panel.classList.remove('on');
     return;
   }
-  panel.classList.add('on');
+  if(!panel.classList.contains('on')){ panel.classList.add('on'); panel.classList.add('collapsed'); }
   let lockHtml='';
   if(lockInfo){
     lockHtml=`<div style="background:#fff1f2;border:1.5px solid #fecaca;border-radius:10px;padding:10px 12px;margin-bottom:8px">
