@@ -1,5 +1,5 @@
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=5, viewport-fit=cover">
 <title>Quản lý Phòng họp</title>
 <style>
   :root{
@@ -10,7 +10,8 @@
     --radius:14px; --shadow:0 1px 2px rgba(15,42,67,.06),0 8px 24px rgba(15,42,67,.07);
   }
   *{box-sizing:border-box}
-  html,body{margin:0}
+  html,body{margin:0;max-width:100%;overflow-x:hidden}
+  body{width:100%}
   body{
     font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
     background:var(--bg); color:var(--ink); -webkit-font-smoothing:antialiased;
@@ -298,6 +299,8 @@
   .dp-btn.release{ background:#ef4444; color:#fff }
   .dp-btn.release:hover{ background:#dc2626 }
   .dp-empty{ text-align:center; color:#94a3b8; padding:18px 10px; font-size:12.5px }
+  #diaryPanel.collapsed .dp-body{ display:none }
+  #diaryPanel.collapsed #diaryChevron{ transform:rotate(180deg) }
   @media(max-width:600px){
     #diaryPanel{ top:auto; bottom:80px; left:8px; right:8px; width:auto; max-width:none }
   }
@@ -305,6 +308,8 @@
   /* Admin panel */
   #adminPanel{ display:none }
   #adminPanel.on{ display:flex !important }
+  #adminPanel.collapsed .apbtn{ display:none }
+  #adminPanel.collapsed #adminPanelChevron{ transform:rotate(180deg) }
   #adminFab{ display:none }
   .apbtn{
     background:rgba(255,255,255,.08);
@@ -517,12 +522,12 @@
 
 <header>
   <div class="hwrap">
-    <div class="brand"><span class="dot">🏢</span> Quản lý Phòng họp</div>
+    <div class="brand" id="brandLogo" onclick="handleLogoClick()" style="cursor:pointer;user-select:none"><span class="dot">🏢</span> Quản lý Phòng họp</div>
     <div class="hctrl">
       <button class="hbtn bellbtn" id="bell" onclick="openQueue()" style="display:none">🔔 Chờ duyệt <span class="bcount zero" id="bellCount">0</span></button>
       <button class="hbtn adminbtn" id="recurBtn" onclick="openRecur()" style="display:none">📌 Lịch cố định</button>
       <button class="hbtn" id="myHistBtn" onclick="openMyHistory()" style="background:#f0fdf4;color:#15803d;display:none">📋 Lịch của tôi</button>
-      <button class="hbtn adminbtn" id="adminBtn" onclick="toggleAdmin()">🔑 Chế độ Admin</button>
+      <button class="hbtn adminbtn" id="adminBtn" onclick="toggleAdmin()" style="display:none">🔑 Chế độ Admin</button>
       <div class="clock"><div class="t" id="clk">--:--</div><div class="d" id="clkd">—</div></div>
     </div>
   </div>
@@ -2209,6 +2214,19 @@ let toastT;
 function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('on');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('on'),2200)}
 function tickClock(){const n=new Date();document.getElementById('clk').textContent=pad(n.getHours())+':'+pad(n.getMinutes());document.getElementById('clkd').textContent=fmtVNDate(n)}
 
+/* ---------- Ẩn mục Quản trị: bấm liên tiếp 5 lần vào logo để hiện lại ---------- */
+let _logoClicks=[];
+function handleLogoClick(){
+  const now=Date.now();
+  _logoClicks.push(now);
+  _logoClicks=_logoClicks.filter(t=>now-t<2500);
+  if(_logoClicks.length>=5){
+    _logoClicks=[];
+    const ab=document.getElementById('adminBtn');
+    if(ab){ ab.style.display='inline-flex'; toast('🔑 Đã hiện mục Quản trị.'); }
+  }
+}
+
 /* ---------- Chế độ Admin & duyệt yêu cầu ---------- */
 // Nhớ trạng thái Admin RIÊNG trên thiết bị này
 function setAdminPersist(on){ try{ if(on) localStorage.setItem('ph_admin','1'); else localStorage.removeItem('ph_admin'); }catch(e){} }
@@ -2245,6 +2263,7 @@ function refreshAdminUI(){
   const ab=document.getElementById('adminBtn');
   ab.textContent = isAdmin ? '🔓 Thoát Admin' : '🔑 Chế độ Admin';
   ab.classList.toggle('on', isAdmin);
+  if(isAdmin) ab.style.display='inline-flex'; // đã đăng nhập Admin thì luôn hiện nút để thoát được
   document.getElementById('bell').style.display = isAdmin ? 'inline-flex' : 'none';
   document.getElementById('recurBtn').style.display = isAdmin ? 'inline-flex' : 'none';
   const rl=document.getElementById('resetLink'); if(rl) rl.style.display = isAdmin ? '' : 'none';
