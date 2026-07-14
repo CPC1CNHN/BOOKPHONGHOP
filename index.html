@@ -301,9 +301,7 @@
   .dp-empty{ text-align:center; color:#94a3b8; padding:18px 10px; font-size:12.5px }
   #diaryPanel.collapsed .dp-body{ display:none }
   #diaryPanel.collapsed #diaryChevron{ transform:rotate(180deg) }
-  @media(max-width:600px){
-    #diaryPanel{ top:auto; bottom:80px; left:8px; right:8px; width:auto; max-width:none }
-  }
+
 
   /* Admin panel */
   #adminPanel{ display:none }
@@ -323,66 +321,69 @@
   .apbtn-warn:hover{ background:rgba(251,191,36,.15) }
   .apbtn-danger{ color:#f87171 }
   .apbtn-danger:hover{ background:rgba(248,113,113,.15) }
-  @media(max-width:600px){
-    #adminPanel{ top:auto !important; bottom:70px; left:8px !important; right:8px; min-width:0 }
-    .apbtn{ font-size:13px; padding:9px 12px }
-  }
+
 
   @media(max-width:640px){
+    /* BASE */
     body{font-size:15px;-webkit-text-size-adjust:100%}
     *{-webkit-tap-highlight-color:transparent}
-    .wrap{padding:0 10px 76px}
+    .wrap{padding:8px 10px 80px}
 
     /* HEADER */
     header{border-radius:0;padding:0;position:sticky;top:0;z-index:200}
-    .hwrap{padding:8px 12px;gap:6px}
-    .brand{font-size:14px}
+    .hwrap{padding:9px 12px;gap:6px;min-height:52px}
+    .brand{font-size:14px;font-weight:800;white-space:nowrap}
     .brand .dot{width:24px;height:24px;font-size:13px;flex-shrink:0}
     .clock{display:none}
-    .hctrl{gap:5px;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;flex-shrink:1}
+    .hctrl{gap:5px;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;
+           flex-shrink:1;min-width:0;-webkit-overflow-scrolling:touch}
     .hctrl::-webkit-scrollbar{display:none}
     .hbtn{padding:6px 9px;font-size:12px;white-space:nowrap;flex-shrink:0;min-height:34px}
 
-    /* TABS — cố định dưới đáy */
+    /* TAB BAR — cố định dưới đáy */
     .tabs{
-      position:fixed;bottom:0;left:0;right:0;z-index:300;
-      display:flex;flex-direction:row;width:100%;
-      background:#fff;border-top:1.5px solid #e2e8f0;
-      border-radius:0;gap:0;margin:0;padding:0;
+      position:fixed;bottom:0;left:0;right:0;z-index:400;
+      display:flex;background:#fff;
+      border-top:1.5px solid #e2e8f0;border-radius:0;
+      gap:0;margin:0;padding:0;
       padding-bottom:env(safe-area-inset-bottom,0);
-      box-shadow:0 -2px 10px rgba(0,0,0,.08);
+      box-shadow:0 -2px 10px rgba(0,0,0,.1);
     }
-    .tab{
-      flex:1;padding:10px 4px 8px;font-size:11px;font-weight:700;
-      border-radius:0;text-align:center;
-    }
-    .tab.on{color:var(--teal);background:#f0fdf9;border-top:2.5px solid var(--teal)}
+    .tab{flex:1;padding:10px 4px 8px;font-size:11px;font-weight:700;
+         border-radius:0;text-align:center;border:none}
+    .tab.on{color:var(--teal);border-top:2.5px solid var(--teal);background:#f0fdf9}
 
-    /* TODAY NAV BAR */
-    .bar{gap:5px;flex-wrap:wrap}
-    .bar h2{font-size:13px;font-weight:800;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-    .bar > button.act{padding:5px 9px;font-size:12px}
-    .weekpick{font-size:11px}
-    #viewDayPicker{font-size:13px;padding:3px 5px}
+    /* NAV BAR (hôm nay / tuần) */
+    .bar{gap:5px;flex-wrap:wrap;align-items:center;padding:6px 0}
+    .bar h2{font-size:13px;font-weight:800;flex:1;
+            white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+    .bar > button.act{padding:5px 9px;font-size:12px;min-height:32px}
+    .weekpick{font-size:11px;display:flex;align-items:center;gap:4px}
+    #viewDayPicker,#weekPicker{font-size:12px;padding:3px 5px;border-radius:6px}
     .legend{font-size:10px;gap:5px}
-    .legend i{width:8px;height:8px}
+    .legend i{width:8px;height:8px;border-radius:2px}
 
-    /* CARDS — 1 cột để tránh tràn chữ */
+    /* CARDS — 1 cột */
     .grid{grid-template-columns:1fr;gap:8px}
-    .room{padding:11px 12px;gap:7px;border-radius:12px}
-    .room-name{font-size:14px;font-weight:800}
+    .room{padding:12px;gap:7px;border-radius:12px;border-left-width:4px}
+    .room-top{gap:6px}
+    .room-name{font-size:14px;font-weight:800;line-height:1.2}
     .room-sub{font-size:11.5px}
-    .meta{font-size:12px;gap:5px}
-    .badge{font-size:11px;padding:3px 9px}
-    .chip{font-size:11px}
-    .status{font-size:13px;padding:8px 10px}
-    .next{font-size:12px}
-    .room-actions{gap:6px;flex-wrap:wrap}
-    .room-actions button.act{font-size:12px;padding:9px 8px;min-height:42px;flex:1;min-width:0}
+    .meta{font-size:11.5px;gap:5px}
+    .badge{font-size:11px;padding:2px 8px}
+    .chip{font-size:11px;padding:2px 7px}
+    .locinfo{font-size:11.5px}
+    .status{font-size:13px;padding:8px 10px;border-radius:9px}
+    .status .who{font-size:13px}
+    .status .meta2{font-size:11.5px}
+    .next{font-size:11.5px}
+    .room-actions{gap:6px;flex-wrap:nowrap}
+    .room-actions button.act{font-size:12.5px;padding:9px 6px;min-height:42px;
+                             flex:1;min-width:0;border-radius:9px}
     .floor-h{font-size:13px;margin-bottom:8px}
     .floor{margin-bottom:14px}
 
-    /* MODAL — bottom sheet */
+    /* MODAL → BOTTOM SHEET */
     .ov{padding:0 !important;align-items:flex-end !important}
     .box,.modal{
       border-radius:20px 20px 0 0 !important;
@@ -391,79 +392,92 @@
       animation:slideUp .2s ease;
     }
     @keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
-    .modal h3,.box h3{padding:14px 16px 10px;font-size:16px;font-weight:800}
+    .modal h3,.box h3{
+      padding:14px 16px 10px;font-size:16px;font-weight:800;
+    }
     .modal h3::before,.box h3::before{
       content:"";display:block;width:40px;height:4px;
       background:rgba(255,255,255,.3);border-radius:2px;margin:0 auto 10px;
     }
-    .mbody{padding:14px 16px;gap:12px;overflow-y:auto;flex:1;-webkit-overflow-scrolling:touch}
-    .mfoot{padding:12px 16px calc(16px + env(safe-area-inset-bottom,0));gap:8px;border-top:1px solid var(--line)}
+    .mbody{padding:14px 16px;gap:12px;overflow-y:auto;flex:1;
+           -webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+    .mfoot{padding:12px 16px calc(16px + env(safe-area-inset-bottom,0));
+           gap:8px;border-top:1px solid var(--line)}
     .mfoot button.act{min-height:50px;font-size:15px;font-weight:800;border-radius:12px}
 
-    /* FORM */
+    /* FORM INPUTS */
     label{font-size:13px;font-weight:600}
-    input,select,textarea{font-size:16px !important;padding:12px 13px;min-height:48px;border-radius:10px}
+    input,select,textarea{font-size:16px !important;padding:12px 13px;
+                          min-height:48px;border-radius:10px}
     input[type="time"]{min-height:48px}
-    input[type="checkbox"]{width:20px;height:20px}
+    input[type="checkbox"]{width:20px;height:20px;flex-shrink:0}
     .row2{grid-template-columns:1fr}
     .quickslots{gap:6px}
-    .quickslots button{min-height:54px;font-size:14px}
+    .quickslots button{min-height:52px;font-size:13px;border-radius:10px}
     .quickslots button small{font-size:11px;display:block;margin-top:2px}
     .form-group{margin-bottom:11px}
-    .form-group input,.form-group select{padding:11px 12px;min-height:48px;font-size:16px !important}
-    .booknote{font-size:12.5px;padding:10px 12px;line-height:1.5}
+    .form-group input,.form-group select{
+      padding:11px 12px;min-height:48px;font-size:16px !important}
+    .booknote{font-size:12.5px;padding:10px 12px;line-height:1.5;border-radius:10px}
 
     /* LỊCH TUẦN */
-    .weekwrap{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:0 -10px;padding:0 10px}
-    table.week{min-width:500px}
-    .week td{min-height:60px;padding:2px;font-size:9.5px}
-    .c-name{width:100px}
-    .bk{font-size:9px;padding:2px 3px}
-    .bk .tm{font-size:8.5px}
-    .bk .nm2{font-size:9px}
+    .weekwrap{overflow-x:auto;-webkit-overflow-scrolling:touch;
+              margin:0 -10px;padding:0;border-radius:0}
+    table.week{min-width:520px;font-size:9.5px}
+    .c-name{width:100px !important;left:40px}
+    .c-cap,.c-proj{display:none}
+    table.week td{min-height:60px;padding:2px;font-size:9.5px;vertical-align:top}
+    .bk{font-size:9px;padding:2px 3px;border-radius:4px;line-height:1.3}
+    .bk .tm{font-size:8px;font-weight:700;display:block}
+    .bk .nm2{font-size:8.5px;display:block}
+    .bk .ph{display:none}
 
     /* LỊCH THÁNG */
     .mcell{min-height:55px;padding:2px 3px}
     .mchip,.mmore{display:none}
-    .mcell .cnt{display:block;font-size:11px;font-weight:800}
+    .mcell .cnt{display:block;font-size:11px;font-weight:800;color:var(--teal-d)}
 
     /* REMIND BAR */
     .rm-item{font-size:12px;padding:8px 10px;flex-wrap:wrap;gap:6px}
-    .rm-item .rmtext{flex:1;font-size:12px}
+    .rm-item .rmtext{flex:1;font-size:12px;min-width:0}
     .rmbtn{min-height:36px;font-size:12px;padding:5px 10px}
 
     /* DETAIL */
-    .detail{font-size:13px;padding:9px 11px;gap:6px}
+    .detail{font-size:13px;padding:9px 11px;gap:6px;line-height:1.6}
 
-    /* DIARY */
+    /* DIARY PANEL */
     #diaryPanel{
       position:fixed !important;
       top:auto !important;bottom:62px !important;
-      right:8px !important;left:auto !important;
-      width:calc(100vw - 16px) !important;max-width:none !important;
-      border-radius:14px;max-height:45vh;
+      left:8px !important;right:8px !important;width:auto !important;
+      max-width:none !important;max-height:45vh;border-radius:14px;
     }
+    .dp-body{max-height:calc(45vh - 48px)}
 
-    /* ADMIN FAB + PANEL */
+    /* ADMIN FAB + BOTTOM SHEET */
     #adminFab{display:flex !important;bottom:62px !important;left:8px !important}
     #adminPanel{
+      position:fixed !important;
       top:auto !important;bottom:0 !important;
       left:0 !important;right:0 !important;
-      width:100% !important;
+      width:100% !important;min-width:0 !important;
       border-radius:20px 20px 0 0 !important;
       padding:16px 16px calc(20px + env(safe-area-inset-bottom,0)) !important;
+      max-height:75vh;overflow-y:auto;
     }
     .apbtn{font-size:14px;padding:12px 14px;border-radius:10px}
 
     /* TOAST */
     #toast{font-size:13px;padding:10px 16px;bottom:72px;
-      max-width:92vw;left:4vw;right:4vw;transform:none;text-align:center}
+           max-width:92vw;left:4vw;right:4vw;transform:none;
+           text-align:center;border-radius:12px}
 
     /* FOOTER */
-    footer{font-size:11px;padding:6px;text-align:center}
+    footer{font-size:11px;padding:6px;text-align:center;line-height:1.7}
   }
 
   @media(max-width:380px){
+
     .room-name{font-size:13px}
     .hbtn{font-size:11px;padding:5px 8px}
     .bk{font-size:8.5px}
@@ -559,7 +573,7 @@
       <div style="font-size:11px;font-weight:700;color:rgba(255,255,255,.45);letter-spacing:.08em;text-transform:uppercase">⚙ Quản trị</div>
       <span id="adminPanelChevron" style="color:rgba(255,255,255,.4);font-size:14px;transition:transform .2s">▲</span>
     </div>
-    <button class="apbtn" id="lockManageLink" onclick="openManageLocks()">🔐 Quản lý khóa phòng ban</button>
+    <button class="apbtn" id="lockManageLink" onclick="openManageLocks()">🔐 Quản lý khóa phòng ban <span id="lockCount" style="background:#ef4444;color:#fff;border-radius:20px;padding:1px 7px;font-size:11px;margin-left:4px;display:none">0</span></button>
     <button class="apbtn" id="manageRoomsLink" onclick="openManageRooms()">🏛️ Quản lý phòng</button>
     <button class="apbtn apbtn-warn" id="unreleasedLink" onclick="openUnreleased()">⚠️ Chưa trả phòng</button>
     <button class="apbtn" id="restoreLink" onclick="openRestoreSelect()">♻️ Khôi phục dữ liệu bị huỷ</button>
@@ -1270,7 +1284,11 @@ function initData(){
       fdb.ref('config/lockedUsers').on('value', s=>{ 
         const locked = s.val() || {}; 
         localStorage.setItem('ph_lockedUsers', JSON.stringify(locked));
-        renderDiary(); // Cập nhật panel nhật ký ngay khi trạng thái khóa thay đổi
+        renderDiary();
+        // Cập nhật badge số người bị khóa
+        const cnt=Object.keys(locked).length;
+        const badge=document.getElementById('lockCount');
+        if(badge){ badge.textContent=cnt; badge.style.display=cnt?'':'none'; }
       });
       // theo dõi KẾT NỐI THẬT tới cơ sở dữ liệu (không chỉ tải thư viện)
       fdb.ref('.info/connected').on('value', s=>{
