@@ -1326,7 +1326,7 @@ function checkOverdueAndNotify(){
     }
 
     // 2. Khóa người dùng sau 15 phút quá giờ chưa trả phòng
-    if(overdueMin >= 15 && !b.autoReleased){
+    if(overdueMin >= 15 && !b.autoReleased && !b.isAdminBooking){
       b.released=true;
       b.autoReleased=true;
       b.autoReleasedAt=new Date().toISOString();
