@@ -573,7 +573,7 @@
       <div style="font-size:11px;font-weight:700;color:rgba(255,255,255,.45);letter-spacing:.08em;text-transform:uppercase">⚙ Quản trị</div>
       <span id="adminPanelChevron" style="color:rgba(255,255,255,.4);font-size:14px;transition:transform .2s">▲</span>
     </div>
-    <button class="apbtn" id="lockManageLink" onclick="openManageLocks()">🔐 Quản lý khóa phòng ban <span id="lockCount" style="background:#ef4444;color:#fff;border-radius:20px;padding:1px 7px;font-size:11px;margin-left:4px;display:none">0</span></button>
+    <button class="apbtn" id="lockManageLink" onclick="openLockedDepts()">🔐 Quản lý khóa phòng ban <span id="lockCount" style="background:#ef4444;color:#fff;border-radius:20px;padding:1px 7px;font-size:11px;margin-left:4px;display:none">0</span></button>
     <button class="apbtn" id="manageRoomsLink" onclick="openManageRooms()">🏛️ Quản lý phòng</button>
     <button class="apbtn apbtn-warn" id="unreleasedLink" onclick="openUnreleased()">⚠️ Chưa trả phòng</button>
     <button class="apbtn" id="restoreLink" onclick="openRestoreSelect()">♻️ Khôi phục dữ liệu bị huỷ</button>
@@ -736,12 +736,13 @@
 <div id="tip"></div>
 
 <!-- Modal quản lý phòng ban bị khóa -->
-<div class="ov" id="lockedDeptsOv">
-  <div class="box" style="max-width:500px">
-    <h3>🔐 Quản lý phòng ban bị khóa</h3>
-    <div id="lockedDeptsList" style="max-height:350px;overflow:auto;border:1px solid var(--line);border-radius:10px;margin:12px 0;background:#f8fafb"></div>
+<div class="ov" id="lockedDeptsOv" onclick="if(event.target.id==='lockedDeptsOv')closeLockedDepts()">
+  <div class="box" style="max-width:520px;max-height:85vh;display:flex;flex-direction:column">
+    <h3>🔐 Người dùng bị khóa đặt phòng</h3>
+    <div id="lockedDeptsList" style="flex:1;overflow-y:auto;border:1px solid var(--line);border-radius:10px;margin:10px 0;background:#f8fafb"></div>
     <div class="mfoot">
       <button class="act btn-ghost" onclick="closeLockedDepts()">Đóng</button>
+      <button id="unlockAllBtn" class="act btn-danger" style="display:none" onclick="unlockAllUsers()">🔓 Mở khóa tất cả</button>
     </div>
   </div>
 </div>
@@ -1161,21 +1162,36 @@ function openLockedDepts(){
   if(!isAdmin){ toast('Chỉ Admin.'); return; }
   const locked=JSON.parse(localStorage.getItem('ph_lockedUsers')||'{}');
   const list=Object.values(locked);
+  // Lưu danh sách vào biến global để onclick dùng index thay vì embed tên
+  window._lockedList = list;
+  const p=n=>String(n).padStart(2,'0');
+  function fmtLock(iso){ if(!iso)return ''; const d=new Date(iso); return p(d.getDate())+'/'+p(d.getMonth()+1)+'/'+d.getFullYear()+' lúc '+p(d.getHours())+':'+p(d.getMinutes()); }
   let html='';
   if(!list.length){
-    html='<div style="padding:20px;text-align:center;color:var(--mut)">Không có người dùng nào bị khóa.</div>';
+    html='<div style="padding:24px;text-align:center;color:#22c55e;font-size:13px">✅ Không có ai bị khóa đặt phòng.</div>';
   } else {
-    html=list.map(info=>`<div class="locked-dept-item">
-      <div style="flex:1">
-        <div class="locked-dept-item-name">👤 ${esc(info.name)} (${esc(info.dept)})</div>
-        <div style="font-size:12px;color:var(--mut);margin-top:4px">📍 ${esc(info.room)} · 📅 ${info.date} ${info.end}</div>
-        <div style="font-size:11px;color:#c41e3a;margin-top:4px">${esc(info.reason)}</div>
+    html=list.map((info,i)=>`<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;padding:12px;background:#fff9f9;border:1.5px solid #fecaca;border-radius:10px;margin-bottom:8px">
+      <div style="flex:1;min-width:0">
+        <div style="font-weight:700;color:#dc2626;font-size:14px">🔒 ${esc(info.name)} <span style="font-weight:400;font-size:12px;color:#64748b">(${esc(info.dept||'')})</span></div>
+        <div style="font-size:12.5px;color:#475569;margin-top:3px">📍 Phòng: <b>${esc(info.room||'')}</b> · Hết lúc <b>${info.end||''}</b> ngày ${info.date||''}</div>
+        <div style="font-size:11.5px;color:#94a3b8;margin-top:2px">Bị khóa: ${fmtLock(info.lockedAt)}</div>
       </div>
-      <button class="act btn-soft" onclick="confirmUnlock('${esc(info.name)}')">Mở khóa</button>
+      <button class="act btn-soft" style="flex-shrink:0;font-size:12px;padding:7px 12px" onclick="confirmUnlockByIndex(${i})">Mở khóa</button>
     </div>`).join('');
   }
   document.getElementById('lockedDeptsList').innerHTML=html;
+  const uaBtn=document.getElementById('unlockAllBtn');
+  if(uaBtn) uaBtn.style.display=list.length?'':'none';
   document.getElementById('lockedDeptsOv').classList.add('on');
+}
+function confirmUnlockByIndex(i){
+  const info=(window._lockedList||[])[i];
+  if(!info){ toast('Không tìm thấy thông tin.'); return; }
+  if(!confirm('Mở khóa "'+info.name+'"?')) return;
+  unlockUser(info.name);
+  toast('✅ Đã mở khóa: '+info.name);
+  render(); renderDiary();
+  openLockedDepts(); // Refresh list
 }
 function closeLockedDepts(){
   document.getElementById('lockedDeptsOv').classList.remove('on');
@@ -1185,7 +1201,7 @@ function confirmUnlock(name){
   unlockUser(name);
   openLockedDepts();
   toast(`Đã mở khóa "${name}".`);
-  render();
+  render(); renderDiary();
 }
 function lockUser(name, dept, roomId, date, end){
   // Khóa người dùng cụ thể (không phải phòng ban)
@@ -1203,10 +1219,18 @@ function lockUser(name, dept, roomId, date, end){
   localStorage.setItem('ph_lockedUsers',JSON.stringify(locked));
   if(USE_FB) fdb.ref('config/lockedUsers').set(locked);
 }
+function unlockAllUsers(){
+  if(!confirm('Mở khóa tất cả người dùng bị khóa?')) return;
+  localStorage.setItem('ph_lockedUsers','{}');
+  if(USE_FB) fdb.ref('config/lockedUsers').set({});
+  render(); renderDiary(); closeLockedDepts();
+  toast('✅ Đã mở khóa tất cả.');
+}
 function unlockUser(name){
   const locked=JSON.parse(localStorage.getItem('ph_lockedUsers')||'{}');
   delete locked[name];
   localStorage.setItem('ph_lockedUsers',JSON.stringify(locked));
+  if(USE_FB) fdb.ref('config/lockedUsers').set(locked);
   if(USE_FB) fdb.ref('config/lockedUsers').set(locked);
 }
 function isUserLocked(name){
@@ -1226,30 +1250,7 @@ function unlockDepartment(dept){
   localStorage.setItem('ph_lockedDepts',JSON.stringify(locked));
   if(USE_FB) fdb.ref('config/lockedDepts').set(locked);
 }
-function openManageLocks(){
-  if(!isAdmin){ toast('Chỉ Admin.'); return; }
-  const locked=JSON.parse(localStorage.getItem('ph_lockedDepts')||'[]');
-  let html='';
-  if(locked.length){
-    html=locked.map(d=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:10px;background:#fff;border:1px solid var(--line);border-radius:8px;margin-bottom:6px">
-      <div>
-        <div style="font-weight:600;color:var(--navy)">${esc(d)}</div>
-        <div style="font-size:12px;color:var(--mut)">Bị khóa vì chậm trả phòng</div>
-      </div>
-      <button class="act btn-soft" onclick="unlockDepartment('${d.replace(/'/g,"\\'")}');location.reload()">Mở khóa</button>
-    </div>`).join('');
-  } else {
-    html='<div style="text-align:center;color:var(--mut);padding:20px">Không có phòng ban bị khóa</div>';
-  }
-  const modal=`<div class="ov on" id="lockModal" onclick="if(event.target.id==='lockModal')this.remove()">
-    <div class="box" style="max-width:500px">
-      <h3>🔐 Quản lý khóa phòng ban</h3>
-      <div style="max-height:350px;overflow:auto;margin-bottom:14px">${html}</div>
-      <div class="mfoot"><button class="act btn-ghost" onclick="document.getElementById('lockModal').remove()">Đóng</button></div>
-    </div>
-  </div>`;
-  document.body.insertAdjacentHTML('beforeend',modal);
-}
+
 function restoreAllCancelled(){
   if(!isAdmin){ toast('Chỉ Admin.'); return; }
   if(!confirm('Khôi phục tất cả dữ liệu bị huỷ? Các lượt đã huỷ sẽ quay lại trạng thái bình thường.')) return;
