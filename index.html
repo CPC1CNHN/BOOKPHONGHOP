@@ -664,15 +664,15 @@
   <div class="modal">
     <h3 id="dTitle">Chi tiết lượt đặt</h3>
     <div class="mbody"><div class="detail" id="dBody"></div></div>
-    <div class="mfoot">
+    <div class="mfoot" style="flex-wrap:wrap;gap:8px">
       <button class="act btn-ghost" onclick="closeOv2()">Đóng</button>
       <button class="act btn-prim" id="dApproveBtn" style="display:none" onclick="approveFromDetail()">Xác nhận</button>
       <button class="act btn-soft" id="dRelBtn" style="display:none" onclick="releaseFromDetail()">Trả phòng ngay</button>
-      <button class="act btn-soft" id="dEditBtn" style="display:none" onclick="editFromDetail()">✏️ Sửa lượt đặt</button>
+      <button class="act btn-soft" id="dEditBtn" style="display:none" onclick="editFromDetail()">✏️ Sửa</button>
       <button class="act btn-soft" id="dSkipBtn" style="display:none" onclick="skipFromDetail()">Bỏ buổi này</button>
       <button class="act btn-danger" id="dDelRuleBtn" style="display:none" onclick="delRuleFromDetail()">Xoá lịch cố định</button>
       <button class="act btn-danger" id="dGroupBtn" style="display:none" onclick="cancelGroupFromDetail()">Huỷ cả nhóm</button>
-      <button class="act btn-danger" id="dCancelBtn" onclick="cancelCurrent()">Huỷ lượt đặt</button>
+      <button class="act btn-danger" id="dCancelBtn" style="flex:1;min-width:120px" onclick="cancelCurrent()">🗑️ Huỷ lượt đặt</button>
     </div>
   </div>
 </div>
@@ -2070,11 +2070,24 @@ function openDetail(id){
   document.getElementById('dDelRuleBtn').style.display = (isAdmin && fixed) ? '' : 'none';
   document.getElementById('dGroupBtn').style.display = (grpCount>1 && !fixed && isAdmin) ? '' : 'none';
   document.getElementById('dGroupBtn').textContent = 'Huỷ cả nhóm ('+grpCount+' ngày)';
-  // Người dùng: chỉ huỷ khi chưa bắt đầu. Admin: huỷ bất kỳ lúc nào
-  const canCancel = !fixed && !b.released && !b.cancelled && (isAdmin || !hasStarted(b));
+  // Chỉ chủ phòng hoặc Admin mới được huỷ
+  const isOwnerForCancel = isOwnerOrAdmin(b);
+  const canCancel = !fixed && !b.released && !b.cancelled && isOwnerForCancel && (isAdmin || !hasStarted(b));
   const dc=document.getElementById('dCancelBtn');
   dc.style.display = canCancel ? '' : 'none';
-  dc.textContent = isAdmin ? (pend ? 'Từ chối ngày này' : 'Huỷ ngày này') : 'Huỷ lượt đặt của tôi';
+  dc.textContent = isAdmin ? (pend ? '🚫 Từ chối ngày này' : '🗑️ Huỷ ngày này') : '🗑️ Huỷ lịch của tôi';
+  // Thêm banner huỷ nổi bật trong body (dễ thấy hơn trên mobile)
+  const existBanner=document.getElementById('dCancelBanner');
+  if(existBanner) existBanner.remove();
+  if(canCancel && !pend){
+    const banner=document.createElement('div');
+    banner.id='dCancelBanner';
+    banner.style.cssText='margin-top:12px;padding:10px 14px;background:#fff1f2;border:1.5px solid #fecaca;border-radius:10px;display:flex;justify-content:space-between;align-items:center;gap:10px';
+    const bannerText = isAdmin && !isOwner ? 'Admin: huỷ lịch này?' : 'Bạn muốn huỷ lịch của mình?';
+    banner.innerHTML=`<span style="font-size:13px;color:#dc2626">${bannerText}</span>
+      <button class="act btn-danger" style="flex-shrink:0;font-size:13px;padding:7px 14px" onclick="cancelCurrent()">🗑️ Huỷ lịch</button>`;
+    document.getElementById('dBody').appendChild(banner);
+  }
   document.getElementById('ov2').classList.add('on'); modalOpen=true;
 }
 function approveFromDetail(){ const id=detailId; closeOv2(); approve(id); }
@@ -2097,12 +2110,18 @@ async function cancelCurrent(){
   if(!detailId)return;
   const b=bookings.find(x=>x.id===detailId);
   if(!b){ closeOv2(); return; }
-  if(!isOwnerOrAdmin(b)){ toast('Chỉ người đăng ký hoặc Admin mới huỷ được lượt này.'); return; }
-  if(!isAdmin && hasEnded(b)){ toast('Lịch đã kết thúc — chỉ Admin mới được thay đổi lịch sử.'); return; }
-  if(!isAdmin && hasStarted(b)){ toast('Cuộc họp đang diễn ra — hãy dùng "Trả phòng" thay vì huỷ.'); return; }
-  // Confirm handled inline
-  b.cancelled=true; b.cancelledAt=new Date().toISOString(); b.cancelledBy=(isAdmin && getSavedName()!==b.name) ? 'Admin' : (getSavedName()||b.name); dbSaveBooking(b);
-  closeOv2(); render(); updateBell(); toast('Đã huỷ lượt đặt.');
+  // Kiểm tra quyền: chỉ chủ phòng hoặc Admin
+  if(!isOwnerOrAdmin(b)){ toast('⛔ Bạn chỉ có thể huỷ lịch do chính bạn đặt.'); return; }
+  // Lịch đã kết thúc: chỉ Admin
+  if(!isAdmin && hasEnded(b)){ toast('Lịch đã kết thúc — chỉ Admin mới được thay đổi.'); return; }
+  // Lịch đang diễn ra: dùng Trả phòng
+  if(!isAdmin && hasStarted(b)){ toast('Cuộc họp đang diễn ra — hãy bấm "Trả phòng" thay vì huỷ.'); return; }
+  const canceller = getSavedName() || 'Người dùng';
+  b.cancelled=true;
+  b.cancelledAt=new Date().toISOString();
+  b.cancelledBy=isAdmin ? 'Admin' : canceller;
+  dbSaveBooking(b);
+  closeOv2(); render(); updateBell(); toast('✅ Đã huỷ lượt đặt.');
 }
 async function resetAll(){
   if(!isAdmin){ toast('Chỉ Admin mới được xoá lịch.'); return; }
