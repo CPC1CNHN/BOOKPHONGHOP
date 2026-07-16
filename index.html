@@ -1069,10 +1069,21 @@ function openRestoreSelect(){
   let html='';
   cancelled.forEach(b=>{
     const r=roomById(b.roomId);
-    const cancelTimeStr = b.cancelledAt
-      ? `<span style="color:#c0392b;font-weight:700">🗑️ Huỷ: ${fmtDT(b.cancelledAt)}${b.cancelledBy?' · bởi <b>'+esc(b.cancelledBy)+'</b>':''}</span>`
-      : `<span style="color:#94A3B8;font-style:italic">Chưa rõ thời gian huỷ</span>`;
-    html+=`<label class="restore-item">
+    let cancelTimeStr;
+    if(b.autoReleased && b.autoLockedAt){
+      cancelTimeStr=`<span style="color:#ea580c;font-weight:700">⚙️ Hệ thống tự trả phòng: ${fmtDT(b.autoLockedAt)} — ${esc(b.autoLockReason||'Quá giờ không trả')}</span>`;
+    } else if(b.cancelledAt){
+      const byStr=b.cancelledBy?` · bởi <b>${esc(b.cancelledBy)}</b>`:'';
+      cancelTimeStr=`<span style="color:#c0392b;font-weight:700">🗑️ Huỷ: ${fmtDT(b.cancelledAt)}${byStr}</span>`;
+    } else {
+      cancelTimeStr=`<span style="color:#94A3B8;font-style:italic">⚙️ Huỷ bởi hệ thống (trước khi có tính năng ghi lịch sử)</span>`;
+    }
+    // Xác định loại huỷ để filter
+    let cancelType='unknown';
+    if(b.autoReleased) cancelType='system';
+    else if(b.cancelledBy==='Admin') cancelType='admin';
+    else if(b.cancelledAt && b.cancelledBy) cancelType='manual';
+    html+=`<label class="restore-item" data-cancel-type="${cancelType}">
       <input type="checkbox" class="restore-check" value="${b.id}" onchange="updateSelectedCount()">
       <div class="restore-item-info">
         <div class="restore-item-room">🏛️ ${esc(r.name)}</div>
@@ -1130,6 +1141,22 @@ async function markAllReleased(){
   const now=new Date().toISOString();
   list.forEach(b=>{ b.released=true; b.releasedAt=now; b.releasedBy='(admin bulk)'; dbSaveBooking(b); });
   render(); closeUnreleased(); toast(`Đã đánh dấu ${list.length} lịch trả phòng.`);
+}
+function filterRestoreList(){
+  const q=(document.getElementById('restoreSearch')?.value||'').toLowerCase();
+  const by=document.getElementById('restoreFilterBy')?.value||'all';
+  document.querySelectorAll('#cancelledList .restore-item').forEach(el=>{
+    const text=el.textContent.toLowerCase();
+    const cancelType=el.dataset.cancelType||'unknown';
+    const matchQ=!q||text.includes(q);
+    const matchBy=by==='all'||cancelType===by;
+    el.style.display=(matchQ&&matchBy)?'':'none';
+  });
+  // Update count
+  const visible=[...document.querySelectorAll('#cancelledList .restore-item')].filter(e=>e.style.display!=='none').length;
+  const total=[...document.querySelectorAll('#cancelledList .restore-item')].length;
+  const selCount=document.getElementById('selectedCount');
+  if(selCount) selCount.parentElement.title=`Hiển thị ${visible}/${total}`;
 }
 function closeRestoreSelect(){
   document.getElementById('restoreSelectOv').classList.remove('on');
@@ -1350,7 +1377,12 @@ function checkOverdueAndNotify(){
       b.autoReleased=true;
       b.autoReleasedAt=new Date().toISOString();
       b.releasedBy='(hệ thống tự động)';
+      // Đánh dấu để admin biết
+      b.autoLockedAt=new Date().toISOString();
+      b.autoLockReason=`Quá ${overdueMin} phút không trả phòng`;
       dbSaveBooking(b);
+      // Thông báo cho admin ngay lập tức
+      notifyAdminAutoLock(b);
       if(b.name){ 
         lockUser(b.name, b.dept, b.roomId, b.date, b.end); 
         render();
@@ -1905,6 +1937,26 @@ async function saveBooking(){
   dates=[...new Set(dates)].sort();
   if(!dates.length){return showErr('Hãy chọn ít nhất một ngày để đặt.');}
 
+  // Kiểm tra người này đã có lịch ở phòng khác cùng giờ chưa (chỉ cảnh báo, không chặn nếu admin)
+  if(!isAdmin){
+    const norm=s=>(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim().replace(/\s+/g,' ');
+    const conflictDates=[];
+    dates.forEach(ds=>{
+      const alreadyBooked=bookings.find(b=>
+        !b.cancelled && b.status!=='rejected' &&
+        b.date===ds && b.roomId!==roomId &&
+        norm(b.name)===norm(name) &&
+        mins(start)<mins(b.end) && mins(end)>mins(b.start)
+      );
+      if(alreadyBooked) conflictDates.push({ds, room:roomById(alreadyBooked.roomId)?.name||'?', time:`${alreadyBooked.start}–${alreadyBooked.end}`});
+    });
+    if(conflictDates.length){
+      const examples=conflictDates.slice(0,2).map(x=>`${x.ds.slice(8)}/${x.ds.slice(5,7)} (đang có phòng ${x.room} ${x.time})`).join(', ');
+      const more=conflictDates.length>2?` và ${conflictDates.length-2} ngày khác`:'';
+      return showErr(`⛔ <b>${esc(name)}</b> đã có lịch đặt phòng khác cùng giờ: ${examples}${more}.<br>Mỗi người chỉ được đặt <b>1 phòng tại một thời điểm</b>.`);
+    }
+  }
+
   // kiểm tra trùng từng ngày
   const ok=[], bad=[], badClash=[];
   dates.forEach(ds=>{
@@ -2114,8 +2166,13 @@ async function cancelCurrent(){
   if(!isOwnerOrAdmin(b)){ toast('⛔ Bạn chỉ có thể huỷ lịch do chính bạn đặt.'); return; }
   // Lịch đã kết thúc: chỉ Admin
   if(!isAdmin && hasEnded(b)){ toast('Lịch đã kết thúc — chỉ Admin mới được thay đổi.'); return; }
-  // Lịch đang diễn ra: dùng Trả phòng
-  if(!isAdmin && hasStarted(b)){ toast('Cuộc họp đang diễn ra — hãy bấm "Trả phòng" thay vì huỷ.'); return; }
+  // Lịch đang diễn ra: tự động chuyển sang Trả phòng
+  if(hasStarted(b) && !hasEnded(b)){
+    if(confirm('Cuộc họp đang diễn ra. Bấm OK để trả phòng ngay thay vì huỷ.')){
+      closeOv2(); releaseNow(b.id);
+    }
+    return;
+  }
   const canceller = getSavedName() || 'Người dùng';
   b.cancelled=true;
   b.cancelledAt=new Date().toISOString();
@@ -2555,6 +2612,34 @@ function renderDiary(){
       ${statusHtml}${btnHtml}
     </div>`;
   }).join('');
+}
+
+function notifyAdminAutoLock(b){
+  // Hiện banner đỏ cho Admin về việc tự động khóa
+  if(!isAdmin) return;
+  const r=roomById(b.roomId)||{name:'?'};
+  const existing=document.getElementById('autoLockBanner');
+  const container=existing||document.createElement('div');
+  if(!existing){
+    container.id='autoLockBanner';
+    container.style.cssText='position:fixed;top:68px;left:50%;transform:translateX(-50%);z-index:999;max-width:520px;width:90%;background:#fff;border:2px solid #ef4444;border-radius:14px;padding:14px 16px;box-shadow:0 8px 32px rgba(0,0,0,.2)';
+    document.body.appendChild(container);
+  }
+  const items=(container._items||[]);
+  items.push(`<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid #fee2e2">
+    <div>
+      <span style="font-weight:700;color:#dc2626">⚠️ Tự động trả phòng:</span>
+      <span style="font-size:13px"> <b>${esc(r.name)}</b> · ${esc(b.name)} (${esc(b.dept||'')}) · hết lúc ${b.end}</span>
+    </div>
+  </div>`);
+  container._items=items;
+  container.innerHTML=`<div style="font-weight:800;color:#dc2626;margin-bottom:8px;display:flex;justify-content:space-between">
+    🔔 Cảnh báo tự động trả phòng (${items.length})
+    <button onclick="this.closest('#autoLockBanner').remove()" style="background:none;border:none;font-size:18px;cursor:pointer;color:#64748b">✕</button>
+  </div>${items.join('')}
+  <div style="font-size:12px;color:#94a3b8;margin-top:8px">Những người này chưa trả phòng sau 15 phút và bị hệ thống khóa tự động.</div>`;
+  // Tự đóng sau 30 giây
+  setTimeout(()=>{ const el=document.getElementById('autoLockBanner'); if(el) el.remove(); }, 30000);
 }
 
 function forceRefreshReminders(){
