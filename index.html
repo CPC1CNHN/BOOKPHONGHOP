@@ -576,6 +576,7 @@
     <button class="apbtn" id="lockManageLink" onclick="openLockedDepts()">🔐 Quản lý khóa phòng ban <span id="lockCount" style="background:#ef4444;color:#fff;border-radius:20px;padding:1px 7px;font-size:11px;margin-left:4px;display:none">0</span></button>
     <button class="apbtn" id="manageRoomsLink" onclick="openManageRooms()">🏛️ Quản lý phòng</button>
     <button class="apbtn apbtn-warn" id="unreleasedLink" onclick="openUnreleased()">⚠️ Chưa trả phòng</button>
+    <button class="apbtn" onclick="openClearLogs()" style="color:#94a3b8">🔍 Lịch sử xoá lịch</button>
     <button class="apbtn" id="restoreLink" onclick="openRestoreSelect()">♻️ Khôi phục dữ liệu bị huỷ</button>
     <button class="apbtn" id="forceReloadLink" onclick="forceReloadAll()">🔄 Buộc mọi người tải lại</button>
     <button class="apbtn apbtn-danger" id="resetLink" onclick="resetAll()">🗑 Xoá toàn bộ lịch đặt</button>
@@ -996,7 +997,11 @@ function dbClearBookings(){
   if(appLocked){ toast('Bản cũ đã khoá — vui lòng tải lại trang.'); return; }
   if(USE_FB){
     // KHÔNG xoá thật — chỉ ẩn (đánh dấu cancelled) để có thể khôi phục trong Firebase
-    const _now=new Date().toISOString(); bookings.forEach(b=>{ if(!b.cancelled) fdb.ref('bookings/'+b.id).update({cancelled:true,cancelledAt:_now}); });
+    const _now=new Date().toISOString();
+    const _who=getSavedName()||'Admin';
+    bookings.forEach(b=>{ if(!b.cancelled) fdb.ref('bookings/'+b.id).update({cancelled:true,cancelledAt:_now,cancelledBy:_who+' (Xoá toàn bộ)'}); });
+    // Ghi log vào Firebase để truy vết
+    fdb.ref('logs/clearAll').push({by:_who,at:_now,count:bookings.filter(b=>!b.cancelled).length});
   } else { bookings=[]; lsSaveBookings(); afterData(); }
 }
 function dbSaveRecurring(){
@@ -1076,7 +1081,7 @@ function openRestoreSelect(){
       const byStr=b.cancelledBy?` · bởi <b>${esc(b.cancelledBy)}</b>`:'';
       cancelTimeStr=`<span style="color:#c0392b;font-weight:700">🗑️ Huỷ: ${fmtDT(b.cancelledAt)}${byStr}</span>`;
     } else {
-      cancelTimeStr=`<span style="color:#94A3B8;font-style:italic">⚙️ Huỷ bởi hệ thống (trước khi có tính năng ghi lịch sử)</span>`;
+      cancelTimeStr=`<span style="color:#94A3B8;font-style:italic">⚠️ Không rõ ai huỷ (lịch sử chưa được ghi lại)</span>`;
     }
     // Xác định loại huỷ để filter
     let cancelType='unknown';
@@ -2642,6 +2647,36 @@ function notifyAdminAutoLock(b){
   setTimeout(()=>{ const el=document.getElementById('autoLockBanner'); if(el) el.remove(); }, 30000);
 }
 
+function openClearLogs(){
+  if(!isAdmin){ toast('Chỉ Admin.'); return; }
+  if(!USE_FB){ toast('Chỉ hoạt động với Firebase.'); return; }
+  fdb.ref('logs').once('value', snap=>{
+    const data=snap.val()||{};
+    const clearLogs=Object.values(data.clearAll||{}).sort((a,b)=>b.at>a.at?1:-1);
+    const resetLogs=Object.values(data.resetAll||{}).sort((a,b)=>b.at>a.at?1:-1);
+    const p=n=>String(n).padStart(2,'0');
+    function fmt(iso){ const d=new Date(iso); return p(d.getDate())+'/'+p(d.getMonth()+1)+'/'+d.getFullYear()+' '+p(d.getHours())+':'+p(d.getMinutes()); }
+    const allLogs=[
+      ...clearLogs.map(l=>({...l,type:'Xoá toàn bộ (đánh dấu huỷ)'})),
+      ...resetLogs.map(l=>({...l,type:'Reset hoàn toàn'}))
+    ].sort((a,b)=>b.at>a.at?1:-1);
+    const html=allLogs.length
+      ? allLogs.map(l=>`<div style="padding:10px 12px;border-bottom:1px solid #f1f5f9">
+          <div style="font-weight:700;color:#dc2626">🗑️ ${esc(l.type)}</div>
+          <div style="font-size:13px;color:#475569">👤 ${esc(l.by||'?')} · 🕐 ${fmt(l.at)}</div>
+          ${l.count!=null?`<div style="font-size:12px;color:#94a3b8">Số lịch bị ảnh hưởng: ${l.count}</div>`:''}
+        </div>`).join('')
+      : '<div style="padding:24px;text-align:center;color:#94a3b8">Chưa có lịch sử xoá nào được ghi lại.</div>';
+    document.getElementById('clearLogModal')?.remove();
+    document.body.insertAdjacentHTML('beforeend',`<div class="ov on" id="clearLogModal" onclick="if(event.target.id==='clearLogModal')this.remove()">
+      <div class="box" style="max-width:500px;max-height:80vh;display:flex;flex-direction:column">
+        <h3>🔍 Lịch sử Xoá/Reset lịch đặt phòng</h3>
+        <div style="overflow-y:auto;flex:1;border:1px solid var(--line);border-radius:10px;background:#f8fafc">${html}</div>
+        <div class="mfoot"><button class="act btn-ghost" onclick="document.getElementById('clearLogModal').remove()">Đóng</button></div>
+      </div>
+    </div>`);
+  });
+}
 function forceRefreshReminders(){
   // Đọc lại trạng thái released từ Firebase rồi clear banner ngay
   if(!USE_FB) { checkReminders(); return; }
