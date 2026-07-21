@@ -301,7 +301,9 @@
   .dp-empty{ text-align:center; color:#94a3b8; padding:18px 10px; font-size:12.5px }
   #diaryPanel.collapsed .dp-body{ display:none }
   #diaryPanel.collapsed #diaryChevron{ transform:rotate(180deg) }
-
+  @media(max-width:600px){
+    #diaryPanel{ top:auto; bottom:80px; left:8px; right:8px; width:auto; max-width:none }
+  }
 
   /* Admin panel */
   #adminPanel{ display:none }
@@ -321,166 +323,199 @@
   .apbtn-warn:hover{ background:rgba(251,191,36,.15) }
   .apbtn-danger{ color:#f87171 }
   .apbtn-danger:hover{ background:rgba(248,113,113,.15) }
-
+  @media(max-width:600px){
+    #adminPanel{ top:auto !important; bottom:70px; left:8px !important; right:8px; min-width:0 }
+    .apbtn{ font-size:13px; padding:9px 12px }
+  }
 
   @media(max-width:640px){
-    /* BASE */
+
+    /* ===== GLOBAL ===== */
     body{font-size:15px;-webkit-text-size-adjust:100%}
     *{-webkit-tap-highlight-color:transparent}
-    .wrap{padding:8px 10px 80px}
+    .wrap{padding:0 10px 90px}
 
-    /* HEADER */
+    /* ===== HEADER ===== */
     header{border-radius:0;padding:0;position:sticky;top:0;z-index:200}
-    .hwrap{padding:9px 12px;gap:6px;min-height:52px}
-    .brand{font-size:14px;font-weight:800;white-space:nowrap}
-    .brand .dot{width:24px;height:24px;font-size:13px;flex-shrink:0}
+    .hwrap{padding:8px 12px;gap:6px;align-items:center}
+    .brand{font-size:14px;font-weight:800}
+    .brand .dot{width:26px;height:26px;font-size:15px;flex-shrink:0}
     .clock{display:none}
-    .hctrl{gap:5px;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;
-           flex-shrink:1;min-width:0;-webkit-overflow-scrolling:touch}
-    .hctrl::-webkit-scrollbar{display:none}
-    .hbtn{padding:6px 9px;font-size:12px;white-space:nowrap;flex-shrink:0;min-height:34px}
-
-    /* TAB BAR — cố định dưới đáy */
-    .tabs{
-      position:fixed;bottom:0;left:0;right:0;z-index:400;
-      display:flex;background:#fff;
-      border-top:1.5px solid #e2e8f0;border-radius:0;
-      gap:0;margin:0;padding:0;
-      padding-bottom:env(safe-area-inset-bottom,0);
-      box-shadow:0 -2px 10px rgba(0,0,0,.1);
+    /* Header buttons scroll ngang */
+    .hctrl{
+      gap:5px;flex-wrap:nowrap;
+      overflow-x:auto;-webkit-overflow-scrolling:touch;
+      scrollbar-width:none;padding-bottom:1px;flex-shrink:1;
     }
-    .tab{flex:1;padding:10px 4px 8px;font-size:11px;font-weight:700;
-         border-radius:0;text-align:center;border:none}
+    .hctrl::-webkit-scrollbar{display:none}
+    .hbtn{padding:6px 10px;font-size:12px;white-space:nowrap;flex-shrink:0;min-height:36px;border-radius:8px}
+    .bellbtn .bcount{font-size:11px;padding:1px 5px}
+
+    /* ===== TAB BAR — thanh tab cố định dưới đáy ===== */
+    .tabs{
+      position:fixed;bottom:0;left:0;right:0;z-index:300;
+      display:flex;flex-direction:row;
+      background:#fff;border-top:1.5px solid #e2e8f0;
+      padding:0 0 env(safe-area-inset-bottom,0);
+      border-radius:0;gap:0;margin:0;
+    }
+    .tab{
+      flex:1;padding:10px 4px 8px;font-size:11px;font-weight:700;
+      border-radius:0;border:none;text-align:center;
+      display:flex;flex-direction:column;align-items:center;gap:3px;
+    }
     .tab.on{color:var(--teal);border-top:2.5px solid var(--teal);background:#f0fdf9}
+    /* Thêm icon cho tab */
+    .tab[data-view="today"]::before{content:"📋";font-size:16px}
+    .tab[data-view="week"]::before{content:"📅";font-size:16px}
+    .tab[data-view="month"]::before{content:"🗓";font-size:16px}
 
-    /* NAV BAR (hôm nay / tuần) */
-    .bar{gap:5px;flex-wrap:wrap;align-items:center;padding:6px 0}
-    .bar h2{font-size:13px;font-weight:800;flex:1;
-            white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
-    .bar > button.act{padding:5px 9px;font-size:12px;min-height:32px}
-    .weekpick{font-size:11px;display:flex;align-items:center;gap:4px}
-    #viewDayPicker,#weekPicker{font-size:12px;padding:3px 5px;border-radius:6px}
-    .legend{font-size:10px;gap:5px}
-    .legend i{width:8px;height:8px;border-radius:2px}
+    /* ===== TODAY NAV BAR ===== */
+    .bar{gap:5px;flex-wrap:wrap;align-items:center}
+    .bar h2{font-size:14px;font-weight:800;flex:1;min-width:0;
+      overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .bar > button{padding:6px 10px;font-size:12px;min-height:34px}
+    .bar label.weekpick{font-size:11px;display:flex;align-items:center;gap:4px}
+    #viewDayPicker{font-size:13px;padding:3px 6px;min-height:30px;border-radius:6px}
+    .legend{font-size:10.5px;gap:5px;align-items:center}
+    .legend i{width:8px;height:8px;border-radius:2px;flex-shrink:0}
 
-    /* CARDS — 1 cột */
-    .grid{grid-template-columns:1fr;gap:8px}
-    .room{padding:12px;gap:7px;border-radius:12px;border-left-width:4px}
-    .room-top{gap:6px}
-    .room-name{font-size:14px;font-weight:800;line-height:1.2}
-    .room-sub{font-size:11.5px}
-    .meta{font-size:11.5px;gap:5px}
-    .badge{font-size:11px;padding:2px 8px}
-    .chip{font-size:11px;padding:2px 7px}
-    .locinfo{font-size:11.5px}
-    .status{font-size:13px;padding:8px 10px;border-radius:9px}
-    .status .who{font-size:13px}
-    .status .meta2{font-size:11.5px}
-    .next{font-size:11.5px}
-    .room-actions{gap:6px;flex-wrap:nowrap}
-    .room-actions button.act{font-size:12.5px;padding:9px 6px;min-height:42px;
-                             flex:1;min-width:0;border-radius:9px}
-    .floor-h{font-size:13px;margin-bottom:8px}
-    .floor{margin-bottom:14px}
+    /* ===== CARDS (HÔM NAY) ===== */
+    .grid{grid-template-columns:1fr 1fr;gap:8px}
+    .room{padding:10px 9px;gap:5px;border-radius:12px}
+    .room-name{font-size:13px;font-weight:800;line-height:1.2}
+    .room-sub{font-size:10.5px;margin-top:-2px}
+    .meta{font-size:11px;gap:4px;flex-wrap:wrap}
+    .badge{font-size:10px;padding:2px 7px;border-radius:20px}
+    .loc-hint{font-size:10px}
+    .cur-bk{font-size:11px;padding:5px 7px;border-radius:7px;line-height:1.35}
+    .cur-bk b{font-size:12px}
+    .room-actions{gap:5px;margin-top:2px}
+    .room-actions button{font-size:12px;padding:8px 4px;min-height:42px;border-radius:8px;flex:1}
+    .floor-h{font-size:13px;padding:8px 10px;font-weight:800}
+    .floor{margin-bottom:12px}
+    .empty-state{font-size:13px;padding:24px 16px}
 
-    /* MODAL → BOTTOM SHEET */
+    /* ===== MODAL — BOTTOM SHEET ===== */
     .ov{padding:0 !important;align-items:flex-end !important}
     .box,.modal{
       border-radius:20px 20px 0 0 !important;
-      max-width:100% !important;width:100% !important;
+      max-width:100% !important; width:100% !important;
       max-height:93vh;display:flex;flex-direction:column;
-      animation:slideUp .2s ease;
+      animation:slideUp .2s cubic-bezier(.4,0,.2,1);
     }
     @keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
-    .modal h3,.box h3{
-      padding:14px 16px 10px;font-size:16px;font-weight:800;
-    }
+    /* Drag handle */
     .modal h3::before,.box h3::before{
       content:"";display:block;width:40px;height:4px;
-      background:rgba(255,255,255,.3);border-radius:2px;margin:0 auto 10px;
+      background:rgba(255,255,255,.35);border-radius:2px;margin:0 auto 10px;
     }
+    .modal h3,.box h3{padding:14px 16px 10px;font-size:16px;font-weight:800}
     .mbody{padding:14px 16px;gap:12px;overflow-y:auto;flex:1;
-           -webkit-overflow-scrolling:touch;overscroll-behavior:contain}
-    .mfoot{padding:12px 16px calc(16px + env(safe-area-inset-bottom,0));
-           gap:8px;border-top:1px solid var(--line)}
-    .mfoot button.act{min-height:50px;font-size:15px;font-weight:800;border-radius:12px}
+      -webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+    .mfoot{padding:12px 16px calc(12px + env(safe-area-inset-bottom,0));gap:8px}
+    .mfoot button{min-height:50px;font-size:15px;font-weight:800;border-radius:12px}
 
-    /* FORM INPUTS */
+    /* ===== FORM INPUTS ===== */
     label{font-size:13px;font-weight:600}
-    input,select,textarea{font-size:16px !important;padding:12px 13px;
-                          min-height:48px;border-radius:10px}
-    input[type="time"]{min-height:48px}
+    input,select,textarea{
+      font-size:16px !important; /* iOS auto-zoom fix */
+      padding:12px 13px;min-height:50px;border-radius:10px;
+    }
+    input[type="time"]{min-height:50px;font-size:16px !important}
     input[type="checkbox"]{width:20px;height:20px;flex-shrink:0}
     .row2{grid-template-columns:1fr}
+    .booknote{font-size:12.5px;padding:10px 12px;border-radius:10px;line-height:1.5}
     .quickslots{gap:6px}
-    .quickslots button{min-height:52px;font-size:13px;border-radius:10px}
+    .quickslots button{min-height:56px;font-size:14px;border-radius:10px}
     .quickslots button small{font-size:11px;display:block;margin-top:2px}
-    .form-group{margin-bottom:11px}
-    .form-group input,.form-group select{
-      padding:11px 12px;min-height:48px;font-size:16px !important}
-    .booknote{font-size:12.5px;padding:10px 12px;line-height:1.5;border-radius:10px}
+    .form-group{margin-bottom:12px}
+    .form-group label{font-size:13px;margin-bottom:5px}
+    .form-group input,.form-group select{padding:12px 13px;min-height:50px;font-size:16px !important}
 
-    /* LỊCH TUẦN */
+    /* ===== LỊCH TUẦN ===== */
     .weekwrap{overflow-x:auto;-webkit-overflow-scrolling:touch;
-              margin:0 -10px;padding:0;border-radius:0}
-    table.week{min-width:520px;font-size:9.5px}
-    .c-name{width:100px !important;left:40px}
-    .c-cap,.c-proj{display:none}
-    table.week td{min-height:60px;padding:2px;font-size:9.5px;vertical-align:top}
-    .bk{font-size:9px;padding:2px 3px;border-radius:4px;line-height:1.3}
-    .bk .tm{font-size:8px;font-weight:700;display:block}
-    .bk .nm2{font-size:8.5px;display:block}
-    .bk .ph{display:none}
+      border-radius:12px;margin:0 -10px;padding:0 10px}
+    .week{font-size:10px;min-width:480px}
+    .week th{font-size:10px;padding:4px 2px;position:sticky;top:0;background:#fff;z-index:2}
+    .week th,.week td{min-width:55px}
+    .week .room-col{min-width:80px;max-width:80px;font-size:10px}
+    .week td{min-height:65px;padding:2px;font-size:9.5px;vertical-align:top}
+    .c-name .nm{font-size:10px;font-weight:800}
+    .c-name .sb{font-size:8.5px}
+    .bk{font-size:9px;padding:2px 4px;border-radius:4px;line-height:1.3;cursor:pointer}
+    .bk .tm{font-size:8px;font-weight:700}
+    .bk .nm2{font-size:9px;font-weight:700}
+    .bk .ph{font-size:8px}
+    /* Nav tuần */
+    #weekBar{flex-wrap:wrap;gap:5px}
 
-    /* LỊCH THÁNG */
+    /* ===== LỊCH THÁNG ===== */
     .mcell{min-height:55px;padding:2px 3px}
     .mchip,.mmore{display:none}
     .mcell .cnt{display:block;font-size:11px;font-weight:800;color:var(--teal-d)}
+    .mhead div{font-size:11px;padding:4px 0}
 
-    /* REMIND BAR */
-    .rm-item{font-size:12px;padding:8px 10px;flex-wrap:wrap;gap:6px}
-    .rm-item .rmtext{flex:1;font-size:12px;min-width:0}
-    .rmbtn{min-height:36px;font-size:12px;padding:5px 10px}
+    /* ===== REMIND BAR ===== */
+    .rm-item{font-size:12px;padding:9px 11px;flex-wrap:wrap;gap:6px}
+    .rm-item .rmtext{font-size:12px;flex:1;min-width:0}
+    .rmbtn{min-height:38px;font-size:12px;padding:6px 12px;border-radius:8px}
+    .rm-note{font-size:11.5px;padding:9px 11px;line-height:1.5}
 
-    /* DETAIL */
-    .detail{font-size:13px;padding:9px 11px;gap:6px;line-height:1.6}
+    /* ===== DETAIL / QUEUE ===== */
+    .detail{font-size:13px;padding:8px 10px;gap:6px;line-height:1.6}
+    .qrow{padding:10px 12px;gap:8px}
+    .qrow .qh{font-size:13px;font-weight:700}
+    .qrow .qm{font-size:12px}
+    .qrow .qbtns{gap:6px;flex-wrap:wrap}
+    .qrow .qbtns button{min-height:44px;font-size:12px;flex:1}
 
-    /* DIARY PANEL */
+    /* ===== DIARY PANEL — slide từ dưới lên ===== */
     #diaryPanel{
       position:fixed !important;
-      top:auto !important;bottom:62px !important;
-      left:8px !important;right:8px !important;width:auto !important;
-      max-width:none !important;max-height:45vh;border-radius:14px;
+      top:auto !important; bottom:60px !important;
+      left:8px !important; right:8px !important;
+      width:auto !important; max-width:none !important;
+      border-radius:16px;max-height:50vh;
     }
-    .dp-body{max-height:calc(45vh - 48px)}
+    .dp-head{padding:10px 14px;font-size:13px}
+    .dp-body{max-height:calc(50vh - 50px)}
+    .dp-item{font-size:12.5px;padding:9px 11px}
+    .dp-btn{min-height:42px;font-size:13px}
 
-    /* ADMIN FAB + BOTTOM SHEET */
-    #adminFab{display:flex !important;bottom:62px !important;left:8px !important}
+    /* ===== ADMIN PANEL — bottom sheet on mobile ===== */
+    #adminFab{ display:none !important }
     #adminPanel{
-      position:fixed !important;
-      top:auto !important;bottom:0 !important;
-      left:0 !important;right:0 !important;
-      width:100% !important;min-width:0 !important;
-      border-radius:20px 20px 0 0 !important;
-      padding:16px 16px calc(20px + env(safe-area-inset-bottom,0)) !important;
-      max-height:75vh;overflow-y:auto;
+      top:auto !important; bottom:68px !important;
+      left:8px !important; right:auto !important;
+      min-width:180px; border-radius:14px !important;
     }
-    .apbtn{font-size:14px;padding:12px 14px;border-radius:10px}
+    .apbtn{ font-size:13px; padding:9px 12px; border-radius:9px; }
 
-    /* TOAST */
-    #toast{font-size:13px;padding:10px 16px;bottom:72px;
-           max-width:92vw;left:4vw;right:4vw;transform:none;
-           text-align:center;border-radius:12px}
+    /* ===== MY HISTORY ===== */
+    #myHistStats{gap:6px}
+    #myHistStats>div{padding:8px;min-width:60px;border-radius:8px}
+    #myHistStats>div div:first-child{font-size:20px}
+    #myHistStats>div div:last-child{font-size:11px}
 
-    /* FOOTER */
-    footer{font-size:11px;padding:6px;text-align:center;line-height:1.7}
+    /* ===== FOOTER ===== */
+    footer{font-size:11px;padding:6px 10px;text-align:center;line-height:1.7}
+    .link{font-size:11.5px}
+
+    /* ===== TOAST ===== */
+    #toast{
+      font-size:13px;padding:11px 18px;
+      bottom:72px;max-width:92vw;
+      left:4vw;right:4vw;transform:none;
+      border-radius:12px;text-align:center;
+    }
   }
 
+  /* Màn hình rất nhỏ (iPhone SE, ...) */
   @media(max-width:380px){
-
-    .room-name{font-size:13px}
+    .grid{grid-template-columns:1fr}
+    .room-name{font-size:14px}
     .hbtn{font-size:11px;padding:5px 8px}
-    .bk{font-size:8.5px}
   }
   @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
@@ -573,10 +608,9 @@
       <div style="font-size:11px;font-weight:700;color:rgba(255,255,255,.45);letter-spacing:.08em;text-transform:uppercase">⚙ Quản trị</div>
       <span id="adminPanelChevron" style="color:rgba(255,255,255,.4);font-size:14px;transition:transform .2s">▲</span>
     </div>
-    <button class="apbtn" id="lockManageLink" onclick="openLockedDepts()">🔐 Quản lý khóa phòng ban <span id="lockCount" style="background:#ef4444;color:#fff;border-radius:20px;padding:1px 7px;font-size:11px;margin-left:4px;display:none">0</span></button>
+    <button class="apbtn" id="lockManageLink" onclick="openManageLocks()">🔐 Quản lý khóa phòng ban</button>
     <button class="apbtn" id="manageRoomsLink" onclick="openManageRooms()">🏛️ Quản lý phòng</button>
     <button class="apbtn apbtn-warn" id="unreleasedLink" onclick="openUnreleased()">⚠️ Chưa trả phòng</button>
-    <button class="apbtn" onclick="openClearLogs()" style="color:#94a3b8">🔍 Lịch sử xoá lịch</button>
     <button class="apbtn" id="restoreLink" onclick="openRestoreSelect()">♻️ Khôi phục dữ liệu bị huỷ</button>
     <button class="apbtn" id="forceReloadLink" onclick="forceReloadAll()">🔄 Buộc mọi người tải lại</button>
     <button class="apbtn apbtn-danger" id="resetLink" onclick="resetAll()">🗑 Xoá toàn bộ lịch đặt</button>
@@ -665,15 +699,15 @@
   <div class="modal">
     <h3 id="dTitle">Chi tiết lượt đặt</h3>
     <div class="mbody"><div class="detail" id="dBody"></div></div>
-    <div class="mfoot" style="flex-wrap:wrap;gap:8px">
+    <div class="mfoot">
       <button class="act btn-ghost" onclick="closeOv2()">Đóng</button>
       <button class="act btn-prim" id="dApproveBtn" style="display:none" onclick="approveFromDetail()">Xác nhận</button>
       <button class="act btn-soft" id="dRelBtn" style="display:none" onclick="releaseFromDetail()">Trả phòng ngay</button>
-      <button class="act btn-soft" id="dEditBtn" style="display:none" onclick="editFromDetail()">✏️ Sửa</button>
+      <button class="act btn-soft" id="dEditBtn" style="display:none" onclick="editFromDetail()">✏️ Sửa lượt đặt</button>
       <button class="act btn-soft" id="dSkipBtn" style="display:none" onclick="skipFromDetail()">Bỏ buổi này</button>
       <button class="act btn-danger" id="dDelRuleBtn" style="display:none" onclick="delRuleFromDetail()">Xoá lịch cố định</button>
       <button class="act btn-danger" id="dGroupBtn" style="display:none" onclick="cancelGroupFromDetail()">Huỷ cả nhóm</button>
-      <button class="act btn-danger" id="dCancelBtn" style="flex:1;min-width:120px" onclick="cancelCurrent()">🗑️ Huỷ lượt đặt</button>
+      <button class="act btn-danger" id="dCancelBtn" onclick="cancelCurrent()">Huỷ lượt đặt</button>
     </div>
   </div>
 </div>
@@ -737,13 +771,12 @@
 <div id="tip"></div>
 
 <!-- Modal quản lý phòng ban bị khóa -->
-<div class="ov" id="lockedDeptsOv" onclick="if(event.target.id==='lockedDeptsOv')closeLockedDepts()">
-  <div class="box" style="max-width:520px;max-height:85vh;display:flex;flex-direction:column">
-    <h3>🔐 Người dùng bị khóa đặt phòng</h3>
-    <div id="lockedDeptsList" style="flex:1;overflow-y:auto;border:1px solid var(--line);border-radius:10px;margin:10px 0;background:#f8fafb"></div>
+<div class="ov" id="lockedDeptsOv">
+  <div class="box" style="max-width:500px">
+    <h3>🔐 Quản lý phòng ban bị khóa</h3>
+    <div id="lockedDeptsList" style="max-height:350px;overflow:auto;border:1px solid var(--line);border-radius:10px;margin:12px 0;background:#f8fafb"></div>
     <div class="mfoot">
       <button class="act btn-ghost" onclick="closeLockedDepts()">Đóng</button>
-      <button id="unlockAllBtn" class="act btn-danger" style="display:none" onclick="unlockAllUsers()">🔓 Mở khóa tất cả</button>
     </div>
   </div>
 </div>
@@ -997,11 +1030,7 @@ function dbClearBookings(){
   if(appLocked){ toast('Bản cũ đã khoá — vui lòng tải lại trang.'); return; }
   if(USE_FB){
     // KHÔNG xoá thật — chỉ ẩn (đánh dấu cancelled) để có thể khôi phục trong Firebase
-    const _now=new Date().toISOString();
-    const _who=getSavedName()||'Admin';
-    bookings.forEach(b=>{ if(!b.cancelled) fdb.ref('bookings/'+b.id).update({cancelled:true,cancelledAt:_now,cancelledBy:_who+' (Xoá toàn bộ)'}); });
-    // Ghi log vào Firebase để truy vết
-    fdb.ref('logs/clearAll').push({by:_who,at:_now,count:bookings.filter(b=>!b.cancelled).length});
+    const _now=new Date().toISOString(); bookings.forEach(b=>{ if(!b.cancelled) fdb.ref('bookings/'+b.id).update({cancelled:true,cancelledAt:_now}); });
   } else { bookings=[]; lsSaveBookings(); afterData(); }
 }
 function dbSaveRecurring(){
@@ -1074,21 +1103,10 @@ function openRestoreSelect(){
   let html='';
   cancelled.forEach(b=>{
     const r=roomById(b.roomId);
-    let cancelTimeStr;
-    if(b.autoReleased && b.autoLockedAt){
-      cancelTimeStr=`<span style="color:#ea580c;font-weight:700">⚙️ Hệ thống tự trả phòng: ${fmtDT(b.autoLockedAt)} — ${esc(b.autoLockReason||'Quá giờ không trả')}</span>`;
-    } else if(b.cancelledAt){
-      const byStr=b.cancelledBy?` · bởi <b>${esc(b.cancelledBy)}</b>`:'';
-      cancelTimeStr=`<span style="color:#c0392b;font-weight:700">🗑️ Huỷ: ${fmtDT(b.cancelledAt)}${byStr}</span>`;
-    } else {
-      cancelTimeStr=`<span style="color:#94A3B8;font-style:italic">⚠️ Không rõ ai huỷ (lịch sử chưa được ghi lại)</span>`;
-    }
-    // Xác định loại huỷ để filter
-    let cancelType='unknown';
-    if(b.autoReleased) cancelType='system';
-    else if(b.cancelledBy==='Admin') cancelType='admin';
-    else if(b.cancelledAt && b.cancelledBy) cancelType='manual';
-    html+=`<label class="restore-item" data-cancel-type="${cancelType}">
+    const cancelTimeStr = b.cancelledAt
+      ? `<span style="color:#c0392b;font-weight:700">🗑️ Huỷ: ${fmtDT(b.cancelledAt)}${b.cancelledBy?' · bởi <b>'+esc(b.cancelledBy)+'</b>':''}</span>`
+      : `<span style="color:#94A3B8;font-style:italic">Chưa rõ thời gian huỷ</span>`;
+    html+=`<label class="restore-item">
       <input type="checkbox" class="restore-check" value="${b.id}" onchange="updateSelectedCount()">
       <div class="restore-item-info">
         <div class="restore-item-room">🏛️ ${esc(r.name)}</div>
@@ -1147,22 +1165,6 @@ async function markAllReleased(){
   list.forEach(b=>{ b.released=true; b.releasedAt=now; b.releasedBy='(admin bulk)'; dbSaveBooking(b); });
   render(); closeUnreleased(); toast(`Đã đánh dấu ${list.length} lịch trả phòng.`);
 }
-function filterRestoreList(){
-  const q=(document.getElementById('restoreSearch')?.value||'').toLowerCase();
-  const by=document.getElementById('restoreFilterBy')?.value||'all';
-  document.querySelectorAll('#cancelledList .restore-item').forEach(el=>{
-    const text=el.textContent.toLowerCase();
-    const cancelType=el.dataset.cancelType||'unknown';
-    const matchQ=!q||text.includes(q);
-    const matchBy=by==='all'||cancelType===by;
-    el.style.display=(matchQ&&matchBy)?'':'none';
-  });
-  // Update count
-  const visible=[...document.querySelectorAll('#cancelledList .restore-item')].filter(e=>e.style.display!=='none').length;
-  const total=[...document.querySelectorAll('#cancelledList .restore-item')].length;
-  const selCount=document.getElementById('selectedCount');
-  if(selCount) selCount.parentElement.title=`Hiển thị ${visible}/${total}`;
-}
 function closeRestoreSelect(){
   document.getElementById('restoreSelectOv').classList.remove('on');
 }
@@ -1194,36 +1196,21 @@ function openLockedDepts(){
   if(!isAdmin){ toast('Chỉ Admin.'); return; }
   const locked=JSON.parse(localStorage.getItem('ph_lockedUsers')||'{}');
   const list=Object.values(locked);
-  // Lưu danh sách vào biến global để onclick dùng index thay vì embed tên
-  window._lockedList = list;
-  const p=n=>String(n).padStart(2,'0');
-  function fmtLock(iso){ if(!iso)return ''; const d=new Date(iso); return p(d.getDate())+'/'+p(d.getMonth()+1)+'/'+d.getFullYear()+' lúc '+p(d.getHours())+':'+p(d.getMinutes()); }
   let html='';
   if(!list.length){
-    html='<div style="padding:24px;text-align:center;color:#22c55e;font-size:13px">✅ Không có ai bị khóa đặt phòng.</div>';
+    html='<div style="padding:20px;text-align:center;color:var(--mut)">Không có người dùng nào bị khóa.</div>';
   } else {
-    html=list.map((info,i)=>`<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;padding:12px;background:#fff9f9;border:1.5px solid #fecaca;border-radius:10px;margin-bottom:8px">
-      <div style="flex:1;min-width:0">
-        <div style="font-weight:700;color:#dc2626;font-size:14px">🔒 ${esc(info.name)} <span style="font-weight:400;font-size:12px;color:#64748b">(${esc(info.dept||'')})</span></div>
-        <div style="font-size:12.5px;color:#475569;margin-top:3px">📍 Phòng: <b>${esc(info.room||'')}</b> · Hết lúc <b>${info.end||''}</b> ngày ${info.date||''}</div>
-        <div style="font-size:11.5px;color:#94a3b8;margin-top:2px">Bị khóa: ${fmtLock(info.lockedAt)}</div>
+    html=list.map(info=>`<div class="locked-dept-item">
+      <div style="flex:1">
+        <div class="locked-dept-item-name">👤 ${esc(info.name)} (${esc(info.dept)})</div>
+        <div style="font-size:12px;color:var(--mut);margin-top:4px">📍 ${esc(info.room)} · 📅 ${info.date} ${info.end}</div>
+        <div style="font-size:11px;color:#c41e3a;margin-top:4px">${esc(info.reason)}</div>
       </div>
-      <button class="act btn-soft" style="flex-shrink:0;font-size:12px;padding:7px 12px" onclick="confirmUnlockByIndex(${i})">Mở khóa</button>
+      <button class="act btn-soft" onclick="confirmUnlock('${esc(info.name)}')">Mở khóa</button>
     </div>`).join('');
   }
   document.getElementById('lockedDeptsList').innerHTML=html;
-  const uaBtn=document.getElementById('unlockAllBtn');
-  if(uaBtn) uaBtn.style.display=list.length?'':'none';
   document.getElementById('lockedDeptsOv').classList.add('on');
-}
-function confirmUnlockByIndex(i){
-  const info=(window._lockedList||[])[i];
-  if(!info){ toast('Không tìm thấy thông tin.'); return; }
-  if(!confirm('Mở khóa "'+info.name+'"?')) return;
-  unlockUser(info.name);
-  toast('✅ Đã mở khóa: '+info.name);
-  render(); renderDiary();
-  openLockedDepts(); // Refresh list
 }
 function closeLockedDepts(){
   document.getElementById('lockedDeptsOv').classList.remove('on');
@@ -1233,7 +1220,7 @@ function confirmUnlock(name){
   unlockUser(name);
   openLockedDepts();
   toast(`Đã mở khóa "${name}".`);
-  render(); renderDiary();
+  render();
 }
 function lockUser(name, dept, roomId, date, end){
   // Khóa người dùng cụ thể (không phải phòng ban)
@@ -1251,18 +1238,10 @@ function lockUser(name, dept, roomId, date, end){
   localStorage.setItem('ph_lockedUsers',JSON.stringify(locked));
   if(USE_FB) fdb.ref('config/lockedUsers').set(locked);
 }
-function unlockAllUsers(){
-  if(!confirm('Mở khóa tất cả người dùng bị khóa?')) return;
-  localStorage.setItem('ph_lockedUsers','{}');
-  if(USE_FB) fdb.ref('config/lockedUsers').set({});
-  render(); renderDiary(); closeLockedDepts();
-  toast('✅ Đã mở khóa tất cả.');
-}
 function unlockUser(name){
   const locked=JSON.parse(localStorage.getItem('ph_lockedUsers')||'{}');
   delete locked[name];
   localStorage.setItem('ph_lockedUsers',JSON.stringify(locked));
-  if(USE_FB) fdb.ref('config/lockedUsers').set(locked);
   if(USE_FB) fdb.ref('config/lockedUsers').set(locked);
 }
 function isUserLocked(name){
@@ -1282,7 +1261,30 @@ function unlockDepartment(dept){
   localStorage.setItem('ph_lockedDepts',JSON.stringify(locked));
   if(USE_FB) fdb.ref('config/lockedDepts').set(locked);
 }
-
+function openManageLocks(){
+  if(!isAdmin){ toast('Chỉ Admin.'); return; }
+  const locked=JSON.parse(localStorage.getItem('ph_lockedDepts')||'[]');
+  let html='';
+  if(locked.length){
+    html=locked.map(d=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:10px;background:#fff;border:1px solid var(--line);border-radius:8px;margin-bottom:6px">
+      <div>
+        <div style="font-weight:600;color:var(--navy)">${esc(d)}</div>
+        <div style="font-size:12px;color:var(--mut)">Bị khóa vì chậm trả phòng</div>
+      </div>
+      <button class="act btn-soft" onclick="unlockDepartment('${d.replace(/'/g,"\\'")}');location.reload()">Mở khóa</button>
+    </div>`).join('');
+  } else {
+    html='<div style="text-align:center;color:var(--mut);padding:20px">Không có phòng ban bị khóa</div>';
+  }
+  const modal=`<div class="ov on" id="lockModal" onclick="if(event.target.id==='lockModal')this.remove()">
+    <div class="box" style="max-width:500px">
+      <h3>🔐 Quản lý khóa phòng ban</h3>
+      <div style="max-height:350px;overflow:auto;margin-bottom:14px">${html}</div>
+      <div class="mfoot"><button class="act btn-ghost" onclick="document.getElementById('lockModal').remove()">Đóng</button></div>
+    </div>
+  </div>`;
+  document.body.insertAdjacentHTML('beforeend',modal);
+}
 function restoreAllCancelled(){
   if(!isAdmin){ toast('Chỉ Admin.'); return; }
   if(!confirm('Khôi phục tất cả dữ liệu bị huỷ? Các lượt đã huỷ sẽ quay lại trạng thái bình thường.')) return;
@@ -1316,12 +1318,7 @@ function initData(){
       fdb.ref('config/minVersion').on('value', s=>{ applyVersionLock(Number(s.val()||0)); });
       fdb.ref('config/lockedUsers').on('value', s=>{ 
         const locked = s.val() || {}; 
-        localStorage.setItem('ph_lockedUsers', JSON.stringify(locked));
-        renderDiary();
-        // Cập nhật badge số người bị khóa
-        const cnt=Object.keys(locked).length;
-        const badge=document.getElementById('lockCount');
-        if(badge){ badge.textContent=cnt; badge.style.display=cnt?'':'none'; }
+        localStorage.setItem('ph_lockedUsers', JSON.stringify(locked)); 
       });
       // theo dõi KẾT NỐI THẬT tới cơ sở dữ liệu (không chỉ tải thư viện)
       fdb.ref('.info/connected').on('value', s=>{
@@ -1343,6 +1340,8 @@ function initData(){
     bar.style.display='';
     bar.innerHTML='⚠️ <b>Chế độ thử nghiệm:</b> chưa kết nối cơ sở dữ liệu nên dữ liệu chỉ lưu trên máy này, người khác chưa xem chung được. Mở file, điền cấu hình Firebase ở mục CONFIG (xem file HUONG-DAN-CAI-DAT) để dùng chung toàn công ty.';
     lsLoad(); afterData();
+    // Kiểm tra booking hết giờ và gửi email mỗi 5 phút
+    setInterval(checkOverdueAndNotify, 60*1000); // Kiểm tra mỗi phút
   }
 }
 
@@ -1377,28 +1376,13 @@ function checkOverdueAndNotify(){
     }
 
     // 2. Khóa người dùng sau 15 phút quá giờ chưa trả phòng
-    if(overdueMin >= 15 && !b.autoReleased && !b.isAdminBooking){
+    if(overdueMin >= 15 && !b.autoReleased){
       b.released=true;
       b.autoReleased=true;
       b.autoReleasedAt=new Date().toISOString();
       b.releasedBy='(hệ thống tự động)';
-      // Đánh dấu để admin biết
-      b.autoLockedAt=new Date().toISOString();
-      b.autoLockReason=`Quá ${overdueMin} phút không trả phòng`;
       dbSaveBooking(b);
-      // Thông báo cho admin ngay lập tức
-      notifyAdminAutoLock(b);
-      if(b.name){ 
-        lockUser(b.name, b.dept, b.roomId, b.date, b.end); 
-        render();
-        // Nếu chính người dùng này đang xem trang → thông báo ngay
-        const myName=getSavedName();
-        const norm=s=>(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim().replace(/\s+/g,' ');
-        if(myName && norm(myName)===norm(b.name)){
-          toast('🔒 Tài khoản bị khóa do không trả phòng đúng giờ. Liên hệ Admin để mở khóa.');
-          renderDiary();
-        }
-      }
+      if(b.name){ lockUser(b.name, b.dept, b.roomId, b.date, b.end); render(); }
       console.warn('[Auto-Lock]', b.name, 'quá giờ', overdueMin, 'phút →  khóa');
     }
   });
@@ -1942,26 +1926,6 @@ async function saveBooking(){
   dates=[...new Set(dates)].sort();
   if(!dates.length){return showErr('Hãy chọn ít nhất một ngày để đặt.');}
 
-  // Kiểm tra người này đã có lịch ở phòng khác cùng giờ chưa (chỉ cảnh báo, không chặn nếu admin)
-  if(!isAdmin){
-    const norm=s=>(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim().replace(/\s+/g,' ');
-    const conflictDates=[];
-    dates.forEach(ds=>{
-      const alreadyBooked=bookings.find(b=>
-        !b.cancelled && b.status!=='rejected' &&
-        b.date===ds && b.roomId!==roomId &&
-        norm(b.name)===norm(name) &&
-        mins(start)<mins(b.end) && mins(end)>mins(b.start)
-      );
-      if(alreadyBooked) conflictDates.push({ds, room:roomById(alreadyBooked.roomId)?.name||'?', time:`${alreadyBooked.start}–${alreadyBooked.end}`});
-    });
-    if(conflictDates.length){
-      const examples=conflictDates.slice(0,2).map(x=>`${x.ds.slice(8)}/${x.ds.slice(5,7)} (đang có phòng ${x.room} ${x.time})`).join(', ');
-      const more=conflictDates.length>2?` và ${conflictDates.length-2} ngày khác`:'';
-      return showErr(`⛔ <b>${esc(name)}</b> đã có lịch đặt phòng khác cùng giờ: ${examples}${more}.<br>Mỗi người chỉ được đặt <b>1 phòng tại một thời điểm</b>.`);
-    }
-  }
-
   // kiểm tra trùng từng ngày
   const ok=[], bad=[], badClash=[];
   dates.forEach(ds=>{
@@ -2127,24 +2091,11 @@ function openDetail(id){
   document.getElementById('dDelRuleBtn').style.display = (isAdmin && fixed) ? '' : 'none';
   document.getElementById('dGroupBtn').style.display = (grpCount>1 && !fixed && isAdmin) ? '' : 'none';
   document.getElementById('dGroupBtn').textContent = 'Huỷ cả nhóm ('+grpCount+' ngày)';
-  // Chỉ chủ phòng hoặc Admin mới được huỷ
-  const isOwnerForCancel = isOwnerOrAdmin(b);
-  const canCancel = !fixed && !b.released && !b.cancelled && isOwnerForCancel && (isAdmin || !hasStarted(b));
+  // Người dùng: chỉ huỷ khi chưa bắt đầu. Admin: huỷ bất kỳ lúc nào
+  const canCancel = !fixed && !b.released && !b.cancelled && (isAdmin || !hasStarted(b));
   const dc=document.getElementById('dCancelBtn');
   dc.style.display = canCancel ? '' : 'none';
-  dc.textContent = isAdmin ? (pend ? '🚫 Từ chối ngày này' : '🗑️ Huỷ ngày này') : '🗑️ Huỷ lịch của tôi';
-  // Thêm banner huỷ nổi bật trong body (dễ thấy hơn trên mobile)
-  const existBanner=document.getElementById('dCancelBanner');
-  if(existBanner) existBanner.remove();
-  if(canCancel && !pend){
-    const banner=document.createElement('div');
-    banner.id='dCancelBanner';
-    banner.style.cssText='margin-top:12px;padding:10px 14px;background:#fff1f2;border:1.5px solid #fecaca;border-radius:10px;display:flex;justify-content:space-between;align-items:center;gap:10px';
-    const bannerText = isAdmin && !isOwner ? 'Admin: huỷ lịch này?' : 'Bạn muốn huỷ lịch của mình?';
-    banner.innerHTML=`<span style="font-size:13px;color:#dc2626">${bannerText}</span>
-      <button class="act btn-danger" style="flex-shrink:0;font-size:13px;padding:7px 14px" onclick="cancelCurrent()">🗑️ Huỷ lịch</button>`;
-    document.getElementById('dBody').appendChild(banner);
-  }
+  dc.textContent = isAdmin ? (pend ? 'Từ chối ngày này' : 'Huỷ ngày này') : 'Huỷ lượt đặt của tôi';
   document.getElementById('ov2').classList.add('on'); modalOpen=true;
 }
 function approveFromDetail(){ const id=detailId; closeOv2(); approve(id); }
@@ -2167,23 +2118,12 @@ async function cancelCurrent(){
   if(!detailId)return;
   const b=bookings.find(x=>x.id===detailId);
   if(!b){ closeOv2(); return; }
-  // Kiểm tra quyền: chỉ chủ phòng hoặc Admin
-  if(!isOwnerOrAdmin(b)){ toast('⛔ Bạn chỉ có thể huỷ lịch do chính bạn đặt.'); return; }
-  // Lịch đã kết thúc: chỉ Admin
-  if(!isAdmin && hasEnded(b)){ toast('Lịch đã kết thúc — chỉ Admin mới được thay đổi.'); return; }
-  // Lịch đang diễn ra: tự động chuyển sang Trả phòng
-  if(hasStarted(b) && !hasEnded(b)){
-    if(confirm('Cuộc họp đang diễn ra. Bấm OK để trả phòng ngay thay vì huỷ.')){
-      closeOv2(); releaseNow(b.id);
-    }
-    return;
-  }
-  const canceller = getSavedName() || 'Người dùng';
-  b.cancelled=true;
-  b.cancelledAt=new Date().toISOString();
-  b.cancelledBy=isAdmin ? 'Admin' : canceller;
-  dbSaveBooking(b);
-  closeOv2(); render(); updateBell(); toast('✅ Đã huỷ lượt đặt.');
+  if(!isOwnerOrAdmin(b)){ toast('Chỉ người đăng ký hoặc Admin mới huỷ được lượt này.'); return; }
+  if(!isAdmin && hasEnded(b)){ toast('Lịch đã kết thúc — chỉ Admin mới được thay đổi lịch sử.'); return; }
+  if(!isAdmin && hasStarted(b)){ toast('Cuộc họp đang diễn ra — hãy dùng "Trả phòng" thay vì huỷ.'); return; }
+  // Confirm handled inline
+  b.cancelled=true; b.cancelledAt=new Date().toISOString(); b.cancelledBy=(isAdmin && getSavedName()!==b.name) ? 'Admin' : (getSavedName()||b.name); dbSaveBooking(b);
+  closeOv2(); render(); updateBell(); toast('Đã huỷ lượt đặt.');
 }
 async function resetAll(){
   if(!isAdmin){ toast('Chỉ Admin mới được xoá lịch.'); return; }
@@ -2349,12 +2289,26 @@ function updateBell(){
   document.title = (isAdmin && n>0) ? `(${n}) Quản lý Phòng họp` : 'Quản lý Phòng họp';
   if(queueOpen) renderQueue();
 }
-async function approve(id){
+async function approve(id, forceOverride=false){
   const b=bookings.find(x=>x.id===id); if(!b||!isPending(b))return;
   const clash=live().find(x=>x.id!==id && !isPending(x) && x.roomId===b.roomId && x.date===b.date && mins(b.start)<mins(x.end) && mins(b.end)>mins(x.start));
-  if(clash){ toast(`Trùng giờ với lượt đã duyệt (${clash.start}–${clash.end}) — không thể xác nhận.`); return; }
+  if(clash && !forceOverride){
+    // Admin có thể chọn duyệt đè lên lịch cũ
+    if(isAdmin){
+      const r=roomById(b.roomId);
+      const msg=`Trùng giờ với lịch của ${esc(clash.name)} (${clash.start}–${clash.end}).\n\nAdmin có thể:\n• Bấm OK để HUỶ lịch cũ và duyệt lịch mới này\n• Bấm Huỷ để không làm gì`;
+      if(!confirm(msg)) return;
+      // Huỷ lịch cũ trước
+      clash.cancelled=true; clash.cancelledAt=new Date().toISOString();
+      clash.cancelledBy='Admin (duyệt đè)';
+      dbSaveBooking(clash);
+      toast(`Đã huỷ lịch cũ của ${clash.name} để duyệt lịch mới.`);
+    } else {
+      toast(`Trùng giờ với lượt đã duyệt (${clash.start}–${clash.end}) — không thể xác nhận.`); return;
+    }
+  }
   b.status='confirmed'; b.approvedAt=new Date().toISOString();
-  dbSaveBooking(b); render(); updateBell(); toast('Đã xác nhận đặt phòng.');
+  dbSaveBooking(b); render(); updateBell(); toast('✅ Đã xác nhận đặt phòng.');
 }
 async function reject(id){
   const b=bookings.find(x=>x.id===id); if(!b)return;
@@ -2404,11 +2358,22 @@ function renderQueue(){
   }).join('');
 }
 async function approveGroup(gid){
-  pendingList().filter(b=>b.groupId===gid).forEach(b=>{
+  const items=pendingList().filter(b=>b.groupId===gid);
+  const clashDates=items.filter(b=>live().find(x=>x.id!==b.id && !isPending(x) && x.roomId===b.roomId && x.date===b.date && mins(b.start)<mins(x.end) && mins(b.end)>mins(x.start)));
+  let overrideClash=false;
+  if(clashDates.length && isAdmin){
+    overrideClash=confirm(`${clashDates.length} ngày bị trùng giờ với lịch đã có.\nBấm OK để HUỶ các lịch cũ và duyệt toàn bộ.\nBấm Huỷ để chỉ duyệt các ngày không bị trùng.`);
+  }
+  const now=new Date().toISOString();
+  items.forEach(b=>{
     const clash=live().find(x=>x.id!==b.id && !isPending(x) && x.roomId===b.roomId && x.date===b.date && mins(b.start)<mins(x.end) && mins(b.end)>mins(x.start));
-    if(!clash){ b.status='confirmed'; b.approvedAt=new Date().toISOString(); dbSaveBooking(b); }
+    if(clash && overrideClash){
+      clash.cancelled=true; clash.cancelledAt=now; clash.cancelledBy='Admin (duyệt đè)';
+      dbSaveBooking(clash);
+    }
+    if(!clash || overrideClash){ b.status='confirmed'; b.approvedAt=now; dbSaveBooking(b); }
   });
-  render(); updateBell(); toast('Đã xác nhận cả nhóm nhiều ngày.');
+  render(); updateBell(); toast('✅ Đã xác nhận nhóm nhiều ngày.');
 }
 async function rejectGroup(gid){
   if(!confirm('Từ chối toàn bộ các ngày trong nhóm này?'))return;
@@ -2619,64 +2584,6 @@ function renderDiary(){
   }).join('');
 }
 
-function notifyAdminAutoLock(b){
-  // Hiện banner đỏ cho Admin về việc tự động khóa
-  if(!isAdmin) return;
-  const r=roomById(b.roomId)||{name:'?'};
-  const existing=document.getElementById('autoLockBanner');
-  const container=existing||document.createElement('div');
-  if(!existing){
-    container.id='autoLockBanner';
-    container.style.cssText='position:fixed;top:68px;left:50%;transform:translateX(-50%);z-index:999;max-width:520px;width:90%;background:#fff;border:2px solid #ef4444;border-radius:14px;padding:14px 16px;box-shadow:0 8px 32px rgba(0,0,0,.2)';
-    document.body.appendChild(container);
-  }
-  const items=(container._items||[]);
-  items.push(`<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid #fee2e2">
-    <div>
-      <span style="font-weight:700;color:#dc2626">⚠️ Tự động trả phòng:</span>
-      <span style="font-size:13px"> <b>${esc(r.name)}</b> · ${esc(b.name)} (${esc(b.dept||'')}) · hết lúc ${b.end}</span>
-    </div>
-  </div>`);
-  container._items=items;
-  container.innerHTML=`<div style="font-weight:800;color:#dc2626;margin-bottom:8px;display:flex;justify-content:space-between">
-    🔔 Cảnh báo tự động trả phòng (${items.length})
-    <button onclick="this.closest('#autoLockBanner').remove()" style="background:none;border:none;font-size:18px;cursor:pointer;color:#64748b">✕</button>
-  </div>${items.join('')}
-  <div style="font-size:12px;color:#94a3b8;margin-top:8px">Những người này chưa trả phòng sau 15 phút và bị hệ thống khóa tự động.</div>`;
-  // Tự đóng sau 30 giây
-  setTimeout(()=>{ const el=document.getElementById('autoLockBanner'); if(el) el.remove(); }, 30000);
-}
-
-function openClearLogs(){
-  if(!isAdmin){ toast('Chỉ Admin.'); return; }
-  if(!USE_FB){ toast('Chỉ hoạt động với Firebase.'); return; }
-  fdb.ref('logs').once('value', snap=>{
-    const data=snap.val()||{};
-    const clearLogs=Object.values(data.clearAll||{}).sort((a,b)=>b.at>a.at?1:-1);
-    const resetLogs=Object.values(data.resetAll||{}).sort((a,b)=>b.at>a.at?1:-1);
-    const p=n=>String(n).padStart(2,'0');
-    function fmt(iso){ const d=new Date(iso); return p(d.getDate())+'/'+p(d.getMonth()+1)+'/'+d.getFullYear()+' '+p(d.getHours())+':'+p(d.getMinutes()); }
-    const allLogs=[
-      ...clearLogs.map(l=>({...l,type:'Xoá toàn bộ (đánh dấu huỷ)'})),
-      ...resetLogs.map(l=>({...l,type:'Reset hoàn toàn'}))
-    ].sort((a,b)=>b.at>a.at?1:-1);
-    const html=allLogs.length
-      ? allLogs.map(l=>`<div style="padding:10px 12px;border-bottom:1px solid #f1f5f9">
-          <div style="font-weight:700;color:#dc2626">🗑️ ${esc(l.type)}</div>
-          <div style="font-size:13px;color:#475569">👤 ${esc(l.by||'?')} · 🕐 ${fmt(l.at)}</div>
-          ${l.count!=null?`<div style="font-size:12px;color:#94a3b8">Số lịch bị ảnh hưởng: ${l.count}</div>`:''}
-        </div>`).join('')
-      : '<div style="padding:24px;text-align:center;color:#94a3b8">Chưa có lịch sử xoá nào được ghi lại.</div>';
-    document.getElementById('clearLogModal')?.remove();
-    document.body.insertAdjacentHTML('beforeend',`<div class="ov on" id="clearLogModal" onclick="if(event.target.id==='clearLogModal')this.remove()">
-      <div class="box" style="max-width:500px;max-height:80vh;display:flex;flex-direction:column">
-        <h3>🔍 Lịch sử Xoá/Reset lịch đặt phòng</h3>
-        <div style="overflow-y:auto;flex:1;border:1px solid var(--line);border-radius:10px;background:#f8fafc">${html}</div>
-        <div class="mfoot"><button class="act btn-ghost" onclick="document.getElementById('clearLogModal').remove()">Đóng</button></div>
-      </div>
-    </div>`);
-  });
-}
 function forceRefreshReminders(){
   // Đọc lại trạng thái released từ Firebase rồi clear banner ngay
   if(!USE_FB) { checkReminders(); return; }
@@ -2777,9 +2684,6 @@ function afterDataNotify(){
 }
 function init(){
   tickClock(); setInterval(tickClock,1000*20);
-  // Kiểm tra trả phòng mỗi phút (chạy bất kể Firebase hay không)
-  checkOverdueAndNotify();
-  setInterval(checkOverdueAndNotify, 60*1000);
   isAdmin = loadAdminPersist();
   refreshAdminUI();
   render(); updateBell();
