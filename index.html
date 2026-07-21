@@ -1926,19 +1926,28 @@ async function saveBooking(){
   dates=[...new Set(dates)].sort();
   if(!dates.length){return showErr('Hãy chọn ít nhất một ngày để đặt.');}
 
-  // kiểm tra trùng từng ngày
+  // kiểm tra trùng từng ngày (bao gồm cả lịch chờ duyệt)
   const ok=[], bad=[], badClash=[];
   dates.forEach(ds=>{
-    const clash=bookingsOf(roomId,ds).find(b=>mins(start)<mins(b.end)&&mins(end)>mins(b.start));
-    if(clash){ bad.push(ds); badClash.push({date:ds,clash}); } else ok.push(ds);
+    // Trùng với lịch đã xác nhận
+    const confirmedClash=bookingsOf(roomId,ds).find(b=>
+      !isPending(b) && mins(start)<mins(b.end) && mins(end)>mins(b.start)
+    );
+    // Trùng với lịch đang chờ duyệt của người khác
+    const pendingClash=!confirmedClash && bookingsOf(roomId,ds).find(b=>
+      isPending(b) && mins(start)<mins(b.end) && mins(end)>mins(b.start)
+    );
+    const clash = confirmedClash || pendingClash;
+    if(clash){ bad.push(ds); badClash.push({date:ds,clash,isPending:!!pendingClash}); }
+    else ok.push(ds);
   });
   if(!ok.length){
-    // Lấy thông tin chi tiết của lịch trùng (ngày đầu tiên trong bad)
-    const firstBadDate = bad[0];
-    const clashDetail = bookingsOf(roomId, firstBadDate).find(b=>mins(start)<mins(b.end)&&mins(end)>mins(b.start));
+    const firstBad = badClash[0];
+    const c = firstBad?.clash;
     let errMsg = '⚠️ Trùng lịch — không đặt được.';
-    if(clashDetail){
-      errMsg = `⚠️ Trùng lịch với <b>${esc(clashDetail.name)}</b> (${esc(clashDetail.dept)}): đang đặt <b>${clashDetail.start}–${clashDetail.end}</b>${clashDetail.purpose?' · '+esc(clashDetail.purpose):''}.<br>Hãy đổi giờ, ngày hoặc chọn phòng khác.`;
+    if(c){
+      const pendingNote = firstBad.isPending ? ' <span style="color:#ea580c">(đang chờ duyệt)</span>' : '';
+      errMsg = `⚠️ Trùng lịch với <b>${esc(c.name)}</b> (${esc(c.dept)})${pendingNote}: đặt <b>${c.start}–${c.end}</b>${c.purpose?' · '+esc(c.purpose):''}.<br>Hãy đổi giờ, ngày hoặc chọn phòng khác.`;
     }
     return showErr(errMsg);
   }
@@ -1954,9 +1963,10 @@ async function saveBooking(){
   closeOv(); render(); updateBell();
   let msg = ok.length>1 ? `Đã gửi yêu cầu cho ${ok.length} ngày — chờ Admin xác nhận.` : 'Đã gửi yêu cầu — chờ Admin xác nhận.';
   if(bad.length){
-    const badDetails = badClash.map(({date,clash})=>{
+    const badDetails = badClash.map(({date,clash,isPending})=>{
       const d=date.slice(8)+'/'+date.slice(5,7);
-      return `${d} (trùng ${clash.name} ${clash.start}–${clash.end})`;
+      const note=isPending?' (chờ duyệt)':'';
+      return `${d} (trùng ${clash.name} ${clash.start}–${clash.end}${note})`;
     }).join(', ');
     msg += ` Bỏ qua ${bad.length} ngày trùng: ${badDetails}.`;
   }
