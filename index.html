@@ -1895,7 +1895,7 @@ async function saveBooking(){
     if(hasStarted(b) && !isAdmin){ return showErr('Cuộc họp đã bắt đầu — chỉ Admin mới sửa được thời gian.'); }
     if(!isWorkingDate(parseYmd(date))){ return showErr('Chỉ đặt được từ Thứ 2 đến Thứ 7.'); }
     if(date<ymd(new Date())){ return showErr('Không thể dời về ngày đã qua.'); }
-    if(date===ymd(new Date()) && mins(start)<=nowMin()){ return showErr('Giờ bắt đầu phải sau thời điểm hiện tại.'); }
+    if(!isAdmin && date===ymd(new Date()) && mins(start)<=nowMin()){ return showErr('Giờ bắt đầu phải sau thời điểm hiện tại.'); }
     const clash=bookingsOf(roomId,date).find(x=>x.id!==editingId && mins(start)<mins(x.end)&&mins(end)>mins(x.start));
     if(clash){ return showErr(`⚠️ Trùng lịch: <b>${esc(clash.name)}</b> (${esc(clash.dept)}) đã đặt <b>${clash.start}–${clash.end}</b>${clash.purpose?' · '+esc(clash.purpose):''}.<br>Hãy đổi giờ, ngày hoặc phòng khác.`); }
     if(!email){ return showErr('Hãy nhập email để nhận nhắc trả phòng.'); }
