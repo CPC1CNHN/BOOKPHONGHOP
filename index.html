@@ -1799,8 +1799,7 @@ function isOwnerOrAdmin(b){
 }
 function openEditBooking(id){
   const b=bookings.find(x=>x.id===id); if(!b)return;
-  if(!isOwnerOrAdmin(b)){ toast('Chỉ người đặt phòng hoặc Admin mới sửa được.'); return; }
-  if(hasStarted(b)){ toast('Cuộc họp đã bắt đầu — không sửa được, chỉ có thể trả phòng sớm.'); return; }
+  if(!isAdmin){ toast('⛔ Chỉ Admin mới được sửa thời gian lịch đặt.'); return; }
   editingId=id; modalOpen=true;
   const rs=document.getElementById('fRoom');
   rs.innerHTML=ROOMS.map(r=>`<option value="${r.id}">${r.name}${r.sub?' ('+r.sub+')':''}</option>`).join('');
@@ -1893,7 +1892,7 @@ async function saveBooking(){
   if(editingId){
     const b=bookings.find(x=>x.id===editingId);
     if(!b){ closeOv(); return; }
-    if(hasStarted(b)){ return showErr('Cuộc họp đã bắt đầu — không sửa được thời gian nữa.'); }
+    if(hasStarted(b) && !isAdmin){ return showErr('Cuộc họp đã bắt đầu — chỉ Admin mới sửa được thời gian.'); }
     if(!isWorkingDate(parseYmd(date))){ return showErr('Chỉ đặt được từ Thứ 2 đến Thứ 7.'); }
     if(date<ymd(new Date())){ return showErr('Không thể dời về ngày đã qua.'); }
     if(date===ymd(new Date()) && mins(start)<=nowMin()){ return showErr('Giờ bắt đầu phải sau thời điểm hiện tại.'); }
@@ -2095,7 +2094,7 @@ function openDetail(id){
   // Hiện nút trả phòng: đang họp (chủ phòng hoặc admin), hoặc ngày cũ chưa trả (admin)
   document.getElementById('dRelBtn').style.display = ongoing || (pastUnreleased && isAdmin) ? '' : 'none';
   document.getElementById('dRelBtn').textContent = pastUnreleased ? 'Đánh dấu đã trả phòng' : 'Trả phòng ngay';
-  const canEdit = !fixed && !b.released && !hasStarted(b) && isOwnerOrAdmin(b);
+  const canEdit = !fixed && !b.released && isAdmin; // Chỉ Admin mới được sửa lịch
   document.getElementById('dEditBtn').style.display = canEdit ? '' : 'none';
   document.getElementById('dSkipBtn').style.display = (isAdmin && fixed) ? '' : 'none';
   document.getElementById('dDelRuleBtn').style.display = (isAdmin && fixed) ? '' : 'none';
