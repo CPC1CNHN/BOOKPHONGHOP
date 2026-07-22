@@ -774,10 +774,14 @@
 <div class="ov" id="lockedDeptsOv" onclick="if(event.target.id==='lockedDeptsOv')closeLockedDepts()">
   <div class="box" style="max-width:540px;max-height:85vh;display:flex;flex-direction:column">
     <h3>🔐 Người dùng bị khóa đặt phòng</h3>
-    <div id="lockedDeptsList" style="flex:1;overflow-y:auto;border:1px solid var(--line);border-radius:10px;margin:10px 0;background:#f8fafb;min-height:80px"></div>
+    <div style="background:#fef9ee;border:1px solid #fde68a;border-radius:10px;padding:10px 13px;margin-bottom:10px;font-size:12.5px;color:#92400e">
+      ⚡ Nếu có người báo bị khóa nhưng danh sách trống, hãy bấm <b>"Gửi lệnh mở khóa toàn bộ"</b> để xóa dữ liệu cũ trên máy mọi người.
+    </div>
+    <div id="lockedDeptsList" style="flex:1;overflow-y:auto;border:1px solid var(--line);border-radius:10px;margin-bottom:10px;background:#f8fafb;min-height:60px"></div>
     <div class="mfoot" style="gap:8px;flex-wrap:wrap">
       <button class="act btn-ghost" onclick="closeLockedDepts()">Đóng</button>
-      <button id="unlockAllBtn" class="act btn-danger" style="display:none;flex:1" onclick="unlockAllUsers()">🔓 Mở khóa tất cả</button>
+      <button id="unlockAllBtn" class="act btn-danger" style="display:none" onclick="unlockAllUsers()">🔓 Mở khóa tất cả</button>
+      <button class="act btn-soft" style="flex:1" onclick="broadcastUnlockAll()">📢 Gửi lệnh mở khóa toàn bộ</button>
     </div>
   </div>
 </div>
@@ -1207,8 +1211,9 @@ function openLockedDepts(){
 
     if(!list.length){
       document.getElementById('lockedDeptsList').innerHTML=
-        '<div style="padding:24px;text-align:center;color:#22c55e;font-size:13px">✅ Không có ai bị khóa đặt phòng.</div>';
-      document.getElementById('unlockAllBtn').style.display='none';
+        '<div style="padding:24px;text-align:center;color:#22c55e;font-size:13px">✅ Firebase không ghi nhận ai bị khóa.<br><span style="font-size:12px;color:#94a3b8">Nếu có người vẫn báo bị khóa, bấm "Broadcast mở khóa" bên dưới.</span></div>';
+      document.getElementById('unlockAllBtn').style.display='';
+      document.getElementById('unlockAllBtn').textContent='📢 Broadcast mở khóa toàn bộ';
       return;
     }
 
@@ -2649,6 +2654,17 @@ function renderDiary(){
   }).join('');
 }
 
+function broadcastUnlockAll(){
+  if(!confirm('Gửi lệnh xóa khóa đến TẤT CẢ mọi người?\nThao tác này sẽ mở khóa mọi máy ngay lập tức, kể cả những người chưa đồng bộ.')) return;
+  localStorage.setItem('ph_lockedUsers','{}');
+  if(USE_FB){
+    fdb.ref('config/lockedUsers').set({});
+    fdb.ref('config/lockClearedAt').set(new Date().toISOString());
+  }
+  render(); renderDiary();
+  toast('📢 Đã gửi lệnh mở khóa toàn bộ — mọi máy sẽ tự động được mở khóa.');
+  openLockedDepts();
+}
 function recheckLockStatus(){
   if(!USE_FB){ toast('Không có kết nối Firebase.'); return; }
   const myName=getSavedName(); if(!myName) return;
