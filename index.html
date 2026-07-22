@@ -1223,26 +1223,26 @@ function confirmUnlock(name){
   render();
 }
 function lockUser(name, dept, roomId, date, end){
-  // Khóa người dùng cụ thể (không phải phòng ban)
-  const locked=JSON.parse(localStorage.getItem('ph_lockedUsers')||'{}');
   const r=roomById(roomId);
-  locked[name]={
-    name:name,
-    dept:dept,
-    room:r.name,
-    date:date,
-    end:end,
+  const entry={
+    name:name, dept:dept, room:r.name, date:date, end:end,
     lockedAt:new Date().toISOString(),
-    reason:`Do không trả phòng ${r.name} hết giờ lúc ${end} ngày ${date} nên bị khóa. Liên hệ Admin để mở khóa.`
+    reason:`Không trả phòng ${r.name} hết giờ lúc ${end} ngày ${date}.`
   };
+  // Cập nhật localStorage
+  const locked=JSON.parse(localStorage.getItem('ph_lockedUsers')||'{}');
+  locked[name]=entry;
   localStorage.setItem('ph_lockedUsers',JSON.stringify(locked));
-  if(USE_FB) fdb.ref('config/lockedUsers').set(locked);
+  // Dùng update() thay vì set() để tránh ghi đè người khác bị khóa đồng thời
+  if(USE_FB) fdb.ref('config/lockedUsers/'+encodeURIComponent(name).replace(/[.#$\[\]]/g,'_')).set(entry);
 }
 function unlockUser(name){
+  // Xóa khỏi localStorage
   const locked=JSON.parse(localStorage.getItem('ph_lockedUsers')||'{}');
   delete locked[name];
   localStorage.setItem('ph_lockedUsers',JSON.stringify(locked));
-  if(USE_FB) fdb.ref('config/lockedUsers').set(locked);
+  // Dùng remove() để chỉ xóa 1 người, không ảnh hưởng người khác
+  if(USE_FB) fdb.ref('config/lockedUsers/'+encodeURIComponent(name).replace(/[.#$\[\]]/g,'_')).remove();
 }
 function isUserLocked(name){
   const locked=JSON.parse(localStorage.getItem('ph_lockedUsers')||'{}');
