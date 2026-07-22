@@ -770,13 +770,14 @@
 <div id="toast"></div>
 <div id="tip"></div>
 
-<!-- Modal quản lý phòng ban bị khóa -->
-<div class="ov" id="lockedDeptsOv">
-  <div class="box" style="max-width:500px">
-    <h3>🔐 Quản lý phòng ban bị khóa</h3>
-    <div id="lockedDeptsList" style="max-height:350px;overflow:auto;border:1px solid var(--line);border-radius:10px;margin:12px 0;background:#f8fafb"></div>
-    <div class="mfoot">
+<!-- Modal quản lý người dùng bị khóa -->
+<div class="ov" id="lockedDeptsOv" onclick="if(event.target.id==='lockedDeptsOv')closeLockedDepts()">
+  <div class="box" style="max-width:540px;max-height:85vh;display:flex;flex-direction:column">
+    <h3>🔐 Người dùng bị khóa đặt phòng</h3>
+    <div id="lockedDeptsList" style="flex:1;overflow-y:auto;border:1px solid var(--line);border-radius:10px;margin:10px 0;background:#f8fafb;min-height:80px"></div>
+    <div class="mfoot" style="gap:8px;flex-wrap:wrap">
       <button class="act btn-ghost" onclick="closeLockedDepts()">Đóng</button>
+      <button id="unlockAllBtn" class="act btn-danger" style="display:none;flex:1" onclick="unlockAllUsers()">🔓 Mở khóa tất cả</button>
     </div>
   </div>
 </div>
@@ -1194,24 +1195,66 @@ function restoreSelected(){
 // Quản lý phòng ban bị khóa
 function openLockedDepts(){
   if(!isAdmin){ toast('Chỉ Admin.'); return; }
-  const locked=JSON.parse(localStorage.getItem('ph_lockedUsers')||'{}');
-  const list=Object.values(locked);
-  let html='';
-  if(!list.length){
-    html='<div style="padding:20px;text-align:center;color:var(--mut)">Không có người dùng nào bị khóa.</div>';
-  } else {
-    html=list.map(info=>`<div class="locked-dept-item">
-      <div style="flex:1">
-        <div class="locked-dept-item-name">👤 ${esc(info.name)} (${esc(info.dept)})</div>
-        <div style="font-size:12px;color:var(--mut);margin-top:4px">📍 ${esc(info.room)} · 📅 ${info.date} ${info.end}</div>
-        <div style="font-size:11px;color:#c41e3a;margin-top:4px">${esc(info.reason)}</div>
-      </div>
-      <button class="act btn-soft" onclick="confirmUnlock('${esc(info.name)}')">Mở khóa</button>
-    </div>`).join('');
-  }
-  document.getElementById('lockedDeptsList').innerHTML=html;
   document.getElementById('lockedDeptsOv').classList.add('on');
+  document.getElementById('lockedDeptsList').innerHTML='<div style="padding:20px;text-align:center;color:var(--mut)">Đang tải...</div>';
+  document.getElementById('unlockAllBtn').style.display='none';
+
+  function renderList(locked){
+    const list=Object.values(locked);
+    window._lockedListData=list; // lưu để onclick dùng index
+    const p=n=>String(n).padStart(2,'0');
+    function fmtT(iso){ if(!iso)return ''; const d=new Date(iso); return p(d.getDate())+'/'+p(d.getMonth()+1)+'/'+d.getFullYear()+' lúc '+p(d.getHours())+':'+p(d.getMinutes()); }
+
+    if(!list.length){
+      document.getElementById('lockedDeptsList').innerHTML=
+        '<div style="padding:24px;text-align:center;color:#22c55e;font-size:13px">✅ Không có ai bị khóa đặt phòng.</div>';
+      document.getElementById('unlockAllBtn').style.display='none';
+      return;
+    }
+
+    document.getElementById('lockedDeptsList').innerHTML=list.map((info,i)=>`
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;
+           padding:12px;background:#fff9f9;border:1.5px solid #fecaca;border-radius:10px;margin-bottom:8px">
+        <div style="flex:1;min-width:0">
+          <div style="font-weight:700;color:#dc2626;font-size:14px">
+            🔒 ${esc(info.name||'')}
+            <span style="font-weight:400;font-size:12px;color:#64748b">(${esc(info.dept||'')})</span>
+          </div>
+          <div style="font-size:12.5px;color:#475569;margin-top:3px">
+            📍 Phòng: <b>${esc(info.room||'')}</b> · Hết lúc <b>${info.end||''}</b> ngày ${info.date||''}
+          </div>
+          <div style="font-size:11.5px;color:#94a3b8;margin-top:2px">Bị khóa: ${fmtT(info.lockedAt)}</div>
+        </div>
+        <button class="act btn-soft" style="flex-shrink:0;font-size:12px;padding:7px 12px"
+          onclick="doUnlockOne(${i})">🔓 Mở khóa</button>
+      </div>`).join('');
+    document.getElementById('unlockAllBtn').style.display='';
+    document.getElementById('unlockAllBtn').textContent=`🔓 Mở khóa tất cả (${list.length} người)`;
+  }
+
+  // Đọc trực tiếp từ Firebase để đảm bảo mới nhất
+  if(USE_FB){
+    fdb.ref('config/lockedUsers').once('value', s=>{
+      const raw=s.val()||{};
+      const locked={};
+      Object.values(raw).forEach(v=>{ if(v&&v.name) locked[v.name]=v; });
+      localStorage.setItem('ph_lockedUsers',JSON.stringify(locked));
+      renderList(locked);
+    });
+  } else {
+    renderList(JSON.parse(localStorage.getItem('ph_lockedUsers')||'{}'));
+  }
 }
+function doUnlockOne(i){
+  const info=(window._lockedListData||[])[i];
+  if(!info){ toast('Không tìm thấy.'); return; }
+  if(!confirm(`Mở khóa "${info.name}"?`)) return;
+  unlockUser(info.name);
+  toast('✅ Đã mở khóa: '+info.name);
+  render(); renderDiary();
+  openLockedDepts(); // refresh list
+}
+
 function closeLockedDepts(){
   document.getElementById('lockedDeptsOv').classList.remove('on');
 }
@@ -1246,7 +1289,20 @@ function unlockUser(name){
 }
 function isUserLocked(name){
   const locked=JSON.parse(localStorage.getItem('ph_lockedUsers')||'{}');
-  return locked[name] || null;
+  const localLock=locked[name];
+  // Nếu có lock trong localStorage nhưng Firebase đã xóa → tự xóa localStorage
+  if(localLock && USE_FB){
+    const safeKey=encodeURIComponent(name).replace(/[.#$\[\]]/g,'_');
+    fdb.ref('config/lockedUsers/'+safeKey).once('value', s=>{
+      if(!s.val()){
+        // Firebase không có lock này → xóa khỏi localStorage
+        const l=JSON.parse(localStorage.getItem('ph_lockedUsers')||'{}');
+        delete l[name]; localStorage.setItem('ph_lockedUsers',JSON.stringify(l));
+        renderDiary();
+      }
+    });
+  }
+  return localLock || null;
 }
 function lockDepartment(dept){
   const locked=JSON.parse(localStorage.getItem('ph_lockedDepts')||'[]');
@@ -2593,6 +2649,23 @@ function renderDiary(){
   }).join('');
 }
 
+function recheckLockStatus(){
+  if(!USE_FB){ toast('Không có kết nối Firebase.'); return; }
+  const myName=getSavedName(); if(!myName) return;
+  const safeKey=encodeURIComponent(myName).replace(/[.#$\[\]]/g,'_');
+  toast('Đang kiểm tra...');
+  fdb.ref('config/lockedUsers/'+safeKey).once('value', s=>{
+    if(!s.val()){
+      // Admin đã mở khóa → xóa localStorage
+      const l=JSON.parse(localStorage.getItem('ph_lockedUsers')||'{}');
+      delete l[myName]; localStorage.setItem('ph_lockedUsers',JSON.stringify(l));
+      renderDiary(); render();
+      toast('✅ Tài khoản đã được mở khóa!');
+    } else {
+      toast('🔒 Tài khoản vẫn đang bị khóa. Liên hệ Admin.');
+    }
+  });
+}
 function forceRefreshReminders(){
   // Đọc lại trạng thái released từ Firebase rồi clear banner ngay
   if(!USE_FB) { checkReminders(); return; }
