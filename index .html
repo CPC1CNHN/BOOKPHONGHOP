@@ -332,8 +332,8 @@
 
     /* ===== GLOBAL ===== */
     body{font-size:15px;-webkit-text-size-adjust:100%}
-    *{-webkit-tap-highlight-color:transparent}
-    .wrap{padding:0 10px 90px}
+    *{-webkit-tap-highlight-color:transparent;box-sizing:border-box}
+    .wrap{padding:0 10px 100px} /* thêm padding bottom cho tab bar */
 
     /* ===== HEADER ===== */
     header{border-radius:0;padding:0;position:sticky;top:0;z-index:200}
@@ -381,7 +381,7 @@
     .legend i{width:8px;height:8px;border-radius:2px;flex-shrink:0}
 
     /* ===== CARDS (HÔM NAY) ===== */
-    .grid{grid-template-columns:1fr 1fr;gap:8px}
+    .grid{grid-template-columns:1fr;gap:10px} /* 1 cột - tránh nút bị cắt */
     .room{padding:10px 9px;gap:5px;border-radius:12px}
     .room-name{font-size:13px;font-weight:800;line-height:1.2}
     .room-sub{font-size:10.5px;margin-top:-2px}
@@ -390,8 +390,8 @@
     .loc-hint{font-size:10px}
     .cur-bk{font-size:11px;padding:5px 7px;border-radius:7px;line-height:1.35}
     .cur-bk b{font-size:12px}
-    .room-actions{gap:5px;margin-top:2px}
-    .room-actions button{font-size:12px;padding:8px 4px;min-height:42px;border-radius:8px;flex:1}
+    .room-actions{gap:6px;margin-top:4px;flex-wrap:wrap}
+    .room-actions button{font-size:13px;padding:10px 8px;min-height:46px;border-radius:10px;flex:1;min-width:80px}
     .floor-h{font-size:13px;padding:8px 10px;font-weight:800}
     .floor{margin-bottom:12px}
     .empty-state{font-size:13px;padding:24px 16px}
@@ -413,8 +413,8 @@
     .modal h3,.box h3{padding:14px 16px 10px;font-size:16px;font-weight:800}
     .mbody{padding:14px 16px;gap:12px;overflow-y:auto;flex:1;
       -webkit-overflow-scrolling:touch;overscroll-behavior:contain}
-    .mfoot{padding:12px 16px calc(12px + env(safe-area-inset-bottom,0));gap:8px}
-    .mfoot button{min-height:50px;font-size:15px;font-weight:800;border-radius:12px}
+    .mfoot{padding:12px 16px calc(16px + env(safe-area-inset-bottom,0));gap:8px;flex-wrap:wrap}
+    .mfoot button{min-height:50px;font-size:14px;font-weight:700;border-radius:12px;flex:1;min-width:100px}
 
     /* ===== FORM INPUTS ===== */
     label{font-size:13px;font-weight:600}
@@ -473,10 +473,10 @@
     /* ===== DIARY PANEL — slide từ dưới lên ===== */
     #diaryPanel{
       position:fixed !important;
-      top:auto !important; bottom:60px !important;
+      top:auto !important; bottom:65px !important;
       left:8px !important; right:8px !important;
       width:auto !important; max-width:none !important;
-      border-radius:16px;max-height:50vh;
+      border-radius:16px;max-height:45vh;
     }
     .dp-head{padding:10px 14px;font-size:13px}
     .dp-body{max-height:calc(50vh - 50px)}
@@ -608,7 +608,7 @@
       <div style="font-size:11px;font-weight:700;color:rgba(255,255,255,.45);letter-spacing:.08em;text-transform:uppercase">⚙ Quản trị</div>
       <span id="adminPanelChevron" style="color:rgba(255,255,255,.4);font-size:14px;transition:transform .2s">▲</span>
     </div>
-    <button class="apbtn" id="lockManageLink" onclick="openManageLocks()">🔐 Quản lý khóa phòng ban</button>
+    <button class="apbtn" id="lockManageLink" onclick="openLockedDepts()">🔐 Quản lý khóa phòng ban</button>
     <button class="apbtn" id="manageRoomsLink" onclick="openManageRooms()">🏛️ Quản lý phòng</button>
     <button class="apbtn apbtn-warn" id="unreleasedLink" onclick="openUnreleased()">⚠️ Chưa trả phòng</button>
     <button class="apbtn" id="restoreLink" onclick="openRestoreSelect()">♻️ Khôi phục dữ liệu bị huỷ</button>
@@ -780,7 +780,7 @@
     <div id="lockedDeptsList" style="flex:1;overflow-y:auto;border:1px solid var(--line);border-radius:10px;margin-bottom:10px;background:#f8fafb;min-height:60px"></div>
     <div class="mfoot" style="gap:8px;flex-wrap:wrap">
       <button class="act btn-ghost" onclick="closeLockedDepts()">Đóng</button>
-      <button id="unlockAllBtn" class="act btn-danger" style="display:none" onclick="unlockAllUsers()">🔓 Mở khóa tất cả</button>
+      <button id="unlockAllBtn" class="act btn-danger" onclick="unlockAllUsers()" style="display:none">🔓 Mở khóa tất cả</button>
       <button class="act btn-soft" style="flex:1" onclick="broadcastUnlockAll()">📢 Gửi lệnh mở khóa toàn bộ</button>
     </div>
   </div>
@@ -1242,7 +1242,8 @@ function openLockedDepts(){
     fdb.ref('config/lockedUsers').once('value', s=>{
       const raw=s.val()||{};
       const locked={};
-      Object.values(raw).forEach(v=>{ if(v&&v.name) locked[v.name]=v; });
+      // Lưu cả Firebase key gốc để xóa đúng
+      Object.entries(raw).forEach(([fbKey,v])=>{ if(v&&v.name) locked[v.name]={...v,_fbKey:fbKey}; });
       localStorage.setItem('ph_lockedUsers',JSON.stringify(locked));
       renderList(locked);
     });
@@ -1254,7 +1255,21 @@ function doUnlockOne(i){
   const info=(window._lockedListData||[])[i];
   if(!info){ toast('Không tìm thấy.'); return; }
   if(!confirm(`Mở khóa "${info.name}"?`)) return;
-  unlockUser(info.name);
+  // Xóa khỏi localStorage
+  const ls=JSON.parse(localStorage.getItem('ph_lockedUsers')||'{}');
+  delete ls[info.name];
+  localStorage.setItem('ph_lockedUsers',JSON.stringify(ls));
+  // Xóa khỏi Firebase bằng key gốc (không encode)
+  if(USE_FB){
+    if(info._fbKey){
+      fdb.ref('config/lockedUsers/'+info._fbKey).remove();
+    } else {
+      // Thử cả 2 dạng key
+      fdb.ref('config/lockedUsers/'+info.name).remove();
+      const enc=encodeURIComponent(info.name).replace(/[.#$\[\]]/g,'_');
+      fdb.ref('config/lockedUsers/'+enc).remove();
+    }
+  }
   toast('✅ Đã mở khóa: '+info.name);
   render(); renderDiary();
   openLockedDepts(); // refresh list
@@ -1281,23 +1296,31 @@ function lockUser(name, dept, roomId, date, end){
   const locked=JSON.parse(localStorage.getItem('ph_lockedUsers')||'{}');
   locked[name]=entry;
   localStorage.setItem('ph_lockedUsers',JSON.stringify(locked));
-  // Dùng update() thay vì set() để tránh ghi đè người khác bị khóa đồng thời
-  if(USE_FB) fdb.ref('config/lockedUsers/'+encodeURIComponent(name).replace(/[.#$\[\]]/g,'_')).set(entry);
+  // Dùng key an toàn cho Firebase (thay ký tự không hợp lệ)
+  const safeKey=name.replace(/[.#$\[\]/]/g,'_');
+  entry._firebaseKey=safeKey; // lưu key để xóa sau
+  if(USE_FB) fdb.ref('config/lockedUsers/'+safeKey).set(entry);
 }
 function unlockUser(name){
-  // Xóa khỏi localStorage
   const locked=JSON.parse(localStorage.getItem('ph_lockedUsers')||'{}');
+  const entry=locked[name];
+  const safeKey=(entry&&entry._firebaseKey) || name.replace(/[.#$\[\]/]/g,'_');
   delete locked[name];
   localStorage.setItem('ph_lockedUsers',JSON.stringify(locked));
-  // Dùng remove() để chỉ xóa 1 người, không ảnh hưởng người khác
-  if(USE_FB) fdb.ref('config/lockedUsers/'+encodeURIComponent(name).replace(/[.#$\[\]]/g,'_')).remove();
+  if(USE_FB){
+    // Xóa bằng key đã lưu
+    fdb.ref('config/lockedUsers/'+safeKey).remove();
+    // Cũng xóa theo tên gốc phòng trường hợp dữ liệu cũ lưu theo tên
+    fdb.ref('config/lockedUsers/'+name).remove();
+  }
 }
 function isUserLocked(name){
   const locked=JSON.parse(localStorage.getItem('ph_lockedUsers')||'{}');
   const localLock=locked[name];
   // Nếu có lock trong localStorage nhưng Firebase đã xóa → tự xóa localStorage
   if(localLock && USE_FB){
-    const safeKey=encodeURIComponent(name).replace(/[.#$\[\]]/g,'_');
+    const localEntry=JSON.parse(localStorage.getItem('ph_lockedUsers')||'{}')[name];
+    const safeKey=(localEntry&&localEntry._firebaseKey)||name.replace(/[.#$\[\]/]/g,'_');
     fdb.ref('config/lockedUsers/'+safeKey).once('value', s=>{
       if(!s.val()){
         // Firebase không có lock này → xóa khỏi localStorage
@@ -1684,20 +1707,38 @@ function fillSelect(el,from){
   slots().forEach(m=>{ if(m>=from){const o=document.createElement('option');o.value=toHM(m);o.textContent=toHM(m);el.appendChild(o);} });
 }
 function openBook(roomId,date,suggestStart){
-  // Kiểm tra xem người dùng có bị khóa không
   const myName=getSavedName();
-  if(myName){
-    const lockInfo=isUserLocked(myName);
-    if(lockInfo){
-      const p=n=>String(n).padStart(2,'0');
-      const dt=new Date(lockInfo.lockedAt);
-      const lockedTime=p(dt.getDate())+'/'+p(dt.getMonth()+1)+' lúc '+p(dt.getHours())+':'+p(dt.getMinutes());
-      alert('🔒 Tài khoản của bạn bị khóa đặt phòng\n\nLý do: Không trả phòng '+lockInfo.room+' đúng giờ (hết lúc '+lockInfo.end+' ngày '+lockInfo.date+').\n\nVui lòng liên hệ Admin để được mở khóa.');
-      return;
-    }
+  if(myName && USE_FB){
+    // Kiểm tra Firebase trực tiếp trước — tránh chặn nhầm do localStorage cũ
+    fdb.ref('config/lockedUsers').once('value', snap=>{
+      const raw=snap.val()||{};
+      // Kiểm tra xem tên người dùng có trong Firebase không
+      const fbLock=Object.values(raw).find(v=>v&&v.name&&
+        v.name.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim()===
+        myName.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim()
+      );
+      if(!fbLock){
+        // Không bị khóa trong Firebase → xóa localStorage cũ nếu có
+        const ls=JSON.parse(localStorage.getItem('ph_lockedUsers')||'{}');
+        if(ls[myName]){ delete ls[myName]; localStorage.setItem('ph_lockedUsers',JSON.stringify(ls)); }
+        _openBookReal(roomId,date,suggestStart); // mở form đặt phòng
+      } else {
+        // Vẫn bị khóa trong Firebase
+        alert('🔒 Tài khoản của bạn bị khóa đặt phòng\n\nLý do: Không trả phòng '+fbLock.room+' đúng giờ (hết lúc '+fbLock.end+' ngày '+fbLock.date+').\n\nVui lòng liên hệ Admin để được mở khóa.');
+      }
+    });
+    return; // chờ Firebase trả về
   }
+  _openBookReal(roomId,date,suggestStart);
+}
+function _openBookReal(roomId,date,suggestStart){
   const d=parseYmd(date);
-  if(!isWorkingDate(d)){ toast('Chủ Nhật ngoài giờ mở cửa.'); return; }
+  if(!isWorkingDate(d)){
+    const day=d.getDay();
+    if(day===0) toast('⛔ Chủ Nhật — phòng họp không mở cửa.');
+    else toast('⛔ Ngày này ngoài giờ hoạt động.');
+    return;
+  }
   editingId=null;
   document.getElementById('mTitle').firstChild.textContent='Đăng ký phòng';
   document.getElementById('bookSaveBtn').textContent='Xác nhận đặt phòng';
@@ -1956,7 +1997,7 @@ async function saveBooking(){
     if(hasStarted(b) && !isAdmin){ return showErr('Cuộc họp đã bắt đầu — chỉ Admin mới sửa được thời gian.'); }
     if(!isWorkingDate(parseYmd(date))){ return showErr('Chỉ đặt được từ Thứ 2 đến Thứ 7.'); }
     if(date<ymd(new Date())){ return showErr('Không thể dời về ngày đã qua.'); }
-    if(!isAdmin && date===ymd(new Date()) && mins(start)<=nowMin()){ return showErr('Giờ bắt đầu phải sau thời điểm hiện tại.'); }
+    if(!isAdmin && date===ymd(new Date()) && mins(start)<=nowMin()){ return showErr(`⛔ Giờ bắt đầu (${start}) đã qua — hiện tại đang là ${toHM(nowMin())}. Hãy chọn giờ sau thời điểm hiện tại.`); }
     const clash=bookingsOf(roomId,date).find(x=>x.id!==editingId && mins(start)<mins(x.end)&&mins(end)>mins(x.start));
     if(clash){ return showErr(`⚠️ Trùng lịch: <b>${esc(clash.name)}</b> (${esc(clash.dept)}) đã đặt <b>${clash.start}–${clash.end}</b>${clash.purpose?' · '+esc(clash.purpose):''}.<br>Hãy đổi giờ, ngày hoặc phòng khác.`); }
     if(!email){ return showErr('Hãy nhập email để nhận nhắc trả phòng.'); }
