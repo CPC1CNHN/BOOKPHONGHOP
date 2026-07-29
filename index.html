@@ -536,7 +536,7 @@
   <div id="setupBar" style="display:none"></div>
   <div id="remindBar"></div>
   <div class="tabs">
-    <button class="tab on" id="tab-week" onclick="setView('week')">Lịch tuần</button>
+        <button class="tab on" id="tab-week" onclick="setView('week')">Lịch tuần</button>
     <button class="tab" id="tab-month" onclick="setView('month')">Lịch tháng</button>
   </div>
 
@@ -1500,6 +1500,76 @@ function roomStatusToday(roomId){
   return {state:'free',next,list};
 }
 
+function renderToday(){
+  const todayStr=ymd(new Date());
+  if(!viewDate) viewDate=todayStr;
+  const today=parseYmd(viewDate);
+  const isToday=viewDate===todayStr;
+  document.getElementById('todayTitle').textContent=
+    isToday ? 'Hôm nay, '+fmtVNDate(today) : fmtVNDate(today);
+  const picker=document.getElementById('viewDayPicker');
+  if(picker) picker.value=viewDate;
+  const wrap=document.getElementById('todayBoard');
+  if(!isWorkingDate(today)){
+    wrap.innerHTML=`<div class="empty-state">Ngày ${fmtVNDate(today)} là Chủ Nhật — ngoài giờ mở cửa.</div>`;
+    return;
+  }
+  let html='';
+  [1,2,3].forEach(f=>{
+    html+=`<div class="floor"><div class="floor-h"><span class="num">${f}</span> Tầng ${f}</div><div class="grid">`;
+    ROOMS.filter(r=>r.floor===f).forEach(r=>{
+      const s=isToday ? roomStatusToday(r.id) : roomStatusOnDate(r.id, viewDate);
+      const busy=s.state==='busy', pend=s.state==='pend';
+      let body, badgeCls, badgeTxt, roomCls, actions;
+      if(busy){
+        const c=s.cur;
+        const fixed=!!c.recurring;
+        const nxt=s.list.find(b=>!isPending(b)&&b.id!==c.id&&mins(b.start)>=mins(c.end)&&mins(b.start)<CLOSE);
+        roomCls=fixed?'fixed':'busy'; badgeCls=fixed?'fixed':'busy'; badgeTxt=fixed?'Lịch cố định':'Đang dùng';
+        body=`<div class="status ${fixed?'fixed':''}"><div class="who">${fixed?'📌 ':''}${esc(c.name)} — ${esc(c.dept)}</div>
+          <div class="meta2">${esc(c.purpose||'(không ghi nội dung)')} · ${c.people||'?'} người</div>
+          <div class="meta2">⏱ Đến ${c.end}</div>
+          ${r.loc?`<div class="meta2">📍 ${esc(r.loc)}</div>`:''}
+          ${c.createdAt?`<div class="meta2">Đặt lúc: ${new Date(c.createdAt).toLocaleString('vi-VN')}</div>`:''}</div>`;
+        if(nxt) body+=`<div class="next">▸ Ca tiếp theo: ${nxt.start}–${nxt.end} · ${esc(nxt.name)}</div>`;
+        const bookLater = mins(c.end)<CLOSE ? `<button class="act btn-prim" onclick="openBook('${r.id}','${viewDate}','${c.end}')">Đăng ký ca sau</button>` : '';
+        const releaseBtn = (isToday && !fixed) ? `<button class="act btn-danger" onclick="releaseNow('${c.id}')">Trả phòng</button>` : '';
+        actions = releaseBtn + `<button class="act btn-soft" onclick="openDetail('${c.id}')">Chi tiết</button>` + bookLater;
+      }else if(pend){
+        const p=s.pend;
+        roomCls='pend'; badgeCls='pend'; badgeTxt='Chờ duyệt';
+        body=`<div class="status pend"><div class="who">⏳ ${esc(p.name)} — ${esc(p.dept)}</div>
+          <div class="meta2">${p.start}–${p.end} · ${esc(p.purpose||'(không ghi)')}</div>
+          <div class="meta2">Đang chờ Admin xác nhận</div>
+          ${r.loc?`<div class="meta2">📍 ${esc(r.loc)}</div>`:''}
+          ${p.createdAt?`<div class="meta2">Đặt lúc: ${new Date(p.createdAt).toLocaleString('vi-VN')}</div>`:''}</div>`;
+        const bookLater = mins(p.end)<CLOSE ? `<button class="act btn-prim" onclick="openBook('${r.id}','${viewDate}','${p.end}')">Đăng ký ca khác</button>` : '';
+        actions = (isAdmin
+          ? `<button class="act btn-prim" onclick="approve('${p.id}')">Xác nhận</button>
+             <button class="act btn-danger" onclick="reject('${p.id}')">Từ chối</button>`
+          : `<button class="act btn-soft" onclick="openDetail('${p.id}')">Chi tiết</button>`) + bookLater;
+      }else{
+        roomCls='free'; badgeCls='free'; badgeTxt='Trống';
+        body=`<div class="status empty">Đang trống${s.next?'':' cả ngày'}</div>`;
+        if(s.next) body+=`<div class="next">▸ Sắp tới: ${s.next.start}–${s.next.end} · ${esc(s.next.name)}</div>`;
+        actions=`<button class="act btn-prim" onclick="openBook('${r.id}','${ymd(today)}')">Đăng ký</button>`;
+      }
+      html+=`<div class="room ${roomCls}">
+        <div class="room-top">
+          <div><div class="room-name">${esc(r.name)}</div>${r.sub?`<div class="room-sub">${esc(r.sub)}</div>`:''}</div>
+          <span class="badge ${badgeCls}">${badgeTxt}</span>
+        </div>
+        <div class="meta"><span class="chip">👥 ${r.cap}</span>${r.proj?'<span class="chip proj">📽 Máy chiếu</span>':''}</div>
+        ${r.loc?`<div class="locinfo">📍 ${esc(r.loc)}</div>`:''}
+        ${body}
+        <div class="room-actions">${actions}</div>
+      </div>`;
+    });
+    html+='</div></div>';
+  });
+  wrap.innerHTML=html;
+}
+
 /* ---------- Render: Lịch tuần (kiểu bảng S/C) ---------- */
 function renderWeek(){
   const days=[]; for(let i=0;i<6;i++) days.push(addDays(weekMonday,i)); // T2..T7
@@ -1686,6 +1756,11 @@ function _openBookReal(roomId,date,suggestStart){
   document.getElementById('ov').classList.add('on');
 }
 function clearSlotHL(){ document.querySelectorAll('.quickslots button').forEach(b=>b.classList.remove('on')); }
+// Navigation for today view
+function shiftViewDay(d){
+  const dt=parseYmd(viewDate); dt.setDate(dt.getDate()+d);
+  viewDate=ymd(dt); renderToday();
+}
 function goViewToday(){ viewDate=ymd(new Date()); renderToday(); }
 function gotoViewDay(v){ if(v){ viewDate=v; renderToday(); } }
 // Room status for any date (not real-time, just booked/free)
