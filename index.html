@@ -1627,10 +1627,10 @@ function renderWeek(){
 /* ---------- View switch ---------- */
 function setView(v){
   view=v;
-  document.getElementById('view-today').style.display=v==='today'?'':'none';
+  const elToday=document.getElementById('view-today'); if(elToday) elToday.style.display=v==='today'?'':'none';
   document.getElementById('view-week').style.display=v==='week'?'':'none';
   document.getElementById('view-month').style.display=v==='month'?'':'none';
-  document.getElementById('tab-today').classList.toggle('on',v==='today');
+  const tbToday=document.getElementById('tab-today'); if(tbToday) tbToday.classList.toggle('on',v==='today');
   document.getElementById('tab-week').classList.toggle('on',v==='week');
   document.getElementById('tab-month').classList.toggle('on',v==='month');
   render();
@@ -2803,7 +2803,7 @@ function init(){
   tickClock(); setInterval(tickClock,1000*20);
   isAdmin = loadAdminPersist();
   refreshAdminUI();
-  render(); updateBell();
+  setView(view); updateBell();    // FIX: hiện đúng khung Lịch tuần/Lịch tháng khi tải trang
   initData();                     // kết nối Firebase (hoặc cục bộ) + lắng nghe thời gian thực
   setInterval(checkReminders, 10000);
   setInterval(renderDiary, 30000); // Kiểm tra mỗi 10 giây để xóa banner kịp thời
