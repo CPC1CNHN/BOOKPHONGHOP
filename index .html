@@ -51,32 +51,32 @@
   .btn-danger{background:var(--busy-bg);color:var(--busy)}
 
   /* Floor groups */
-  .floor{margin-bottom:22px}
-  .floor-h{display:flex;align-items:center;gap:9px;margin:0 2px 11px;font-weight:700;font-size:14px;color:var(--navy)}
-  .floor-h .num{width:24px;height:24px;border-radius:7px;background:var(--navy);color:#fff;display:grid;place-items:center;font-size:13px}
+  .floor{margin-bottom:32px;width:100%;box-sizing:border-box}
+  .floor-h{display:flex;align-items:center;gap:10px;margin:0 0 18px;font-weight:700;font-size:16px;color:var(--navy)}
+  .floor-h .num{width:32px;height:32px;border-radius:8px;background:var(--navy);color:#fff;display:grid;place-items:center;font-size:15px;font-weight:700}
 
-  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
-  .room{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:14px;border-left:5px solid var(--line);display:flex;flex-direction:column;gap:10px}
+  .grid{display:grid !important;grid-template-columns:repeat(auto-fit,minmax(320px,1fr)) !important;gap:20px !important;width:100% !important;box-sizing:border-box !important;padding:0 !important;margin:0 !important}
+  .room{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px;border-left:6px solid var(--line);display:flex;flex-direction:column;gap:12px;min-height:300px;width:100%}
   .room.free{border-left-color:var(--free)}
   .room.busy{border-left-color:var(--busy)}
-  .room-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
-  .room-name{font-weight:700;font-size:15px;line-height:1.25}
-  .room-sub{font-size:12px;color:var(--mut);margin-top:2px}
-  .meta{display:flex;gap:7px;flex-wrap:wrap;margin-top:2px}
-  .locinfo{font-size:12px;color:var(--mut);font-weight:600;margin:-4px 0 4px}
-  .chip{font-size:11.5px;background:#F1F5F9;color:#475569;border-radius:999px;padding:2px 9px;font-weight:600}
+  .room-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;min-height:45px}
+  .room-name{font-weight:700;font-size:17px;line-height:1.3}
+  .room-sub{font-size:13px;color:var(--mut);margin-top:3px}
+  .meta{display:flex;gap:10px;flex-wrap:wrap;margin-top:4px;min-height:26px}
+  .locinfo{font-size:14px;color:var(--mut);font-weight:600;margin:2px 0 8px}
+  .chip{font-size:13px;background:#F1F5F9;color:#475569;border-radius:999px;padding:4px 12px;font-weight:600}
   .chip.proj{background:#EAF2FF;color:#2563EB}
-  .badge{font-size:12px;font-weight:700;padding:4px 10px;border-radius:999px;white-space:nowrap}
+  .badge{font-size:14px;font-weight:700;padding:6px 14px;border-radius:999px;white-space:nowrap}
   .badge.free{background:var(--free-bg);color:var(--free)}
   .badge.busy{background:var(--busy-bg);color:var(--busy)}
 
-  .status{font-size:13px;background:#F8FAFC;border-radius:10px;padding:9px 11px;border:1px solid var(--line)}
+  .status{font-size:14px;background:#F8FAFC;border-radius:10px;padding:12px 14px;border:1px solid var(--line);flex:1;min-height:60px}
   .status .who{font-weight:700}
-  .status .meta2{color:var(--mut);font-size:12px;margin-top:2px}
+  .status .meta2{color:var(--mut);font-size:13px;margin-top:4px}
   .status.empty{color:var(--mut)}
   .next{font-size:12px;color:var(--soon);margin-top:6px;font-weight:600}
-  .room-actions{display:flex;gap:8px;margin-top:auto}
-  .room-actions button{flex:1}
+  .room-actions{display:flex;gap:10px;margin-top:auto;flex-wrap:wrap;padding-top:12px;border-top:1px solid var(--line)}
+  .room-actions button{flex:1;min-width:110px;font-size:15px;font-weight:600;min-height:44px}
 
   /* Weekly grid — kiểu bảng phòng họp (S/C) */
   .weekwrap{overflow-x:auto;background:#fff;border-radius:var(--radius);box-shadow:var(--shadow)}
@@ -381,19 +381,18 @@
     .legend i{width:8px;height:8px;border-radius:2px;flex-shrink:0}
 
     /* ===== CARDS (HÔM NAY) ===== */
-    .grid{grid-template-columns:1fr;gap:10px} /* 1 cột - tránh nút bị cắt */
-    .room{padding:10px 9px;gap:5px;border-radius:12px}
-    .room-name{font-size:13px;font-weight:800;line-height:1.2}
-    .room-sub{font-size:10.5px;margin-top:-2px}
-    .meta{font-size:11px;gap:4px;flex-wrap:wrap}
-    .badge{font-size:10px;padding:2px 7px;border-radius:20px}
-    .loc-hint{font-size:10px}
-    .cur-bk{font-size:11px;padding:5px 7px;border-radius:7px;line-height:1.35}
-    .cur-bk b{font-size:12px}
-    .room-actions{gap:6px;margin-top:4px;flex-wrap:wrap}
-    .room-actions button{font-size:13px;padding:10px 8px;min-height:46px;border-radius:10px;flex:1;min-width:80px}
-    .floor-h{font-size:13px;padding:8px 10px;font-weight:800}
-    .floor{margin-bottom:12px}
+    .grid{display:grid !important;grid-template-columns:1fr !important;gap:14px !important;padding:0 2px !important}
+    .room{padding:14px 12px;gap:10px;border-radius:12px;min-height:auto}
+    .room-name{font-size:15px;font-weight:700;line-height:1.3}
+    .room-sub{font-size:12px;margin-top:0}
+    .meta{font-size:12px;gap:6px;min-height:auto}
+    .badge{font-size:12px;padding:4px 10px}
+    .status{font-size:13px;padding:11px 12px;min-height:auto}
+    .room-actions{gap:8px;margin-top:8px;padding-top:10px}
+    .room-actions button{font-size:13.5px;padding:10px 8px;min-height:42px;min-width:75px}
+    .floor-h{font-size:15px;gap:8px;margin:0 0 14px}
+    .floor-h .num{width:28px;height:28px;font-size:13px}
+    .floor{margin-bottom:18px}
     .empty-state{font-size:13px;padding:24px 16px}
 
     /* ===== MODAL — BOTTOM SHEET ===== */
@@ -595,7 +594,7 @@
   </section>
 
   <footer>
-    Lịch được lưu chung và đồng bộ thời gian thực cho mọi người · Giờ mở cửa 08:00–22:00, Thứ 2 đến Thứ 7 · <b id="versionLabel">Phiên bản 32.0</b>
+    Lịch được lưu chung và đồng bộ thời gian thực cho mọi người · Giờ mở cửa 08:00–22:00, Thứ 2 đến Thứ 7 · <b id="versionLabel">Phiên bản 39.0</b>
     <br><button class="link" onclick="enableNotify()">🔔 Bật thông báo trên trình duyệt</button> · <button class="link" onclick="forgetMe()">Quên Họ tên/Phòng ban đã lưu</button>
   </footer>
 
@@ -771,6 +770,21 @@
 <div id="tip"></div>
 
 <!-- Modal quản lý người dùng bị khóa -->
+<div class="ov" id="warningReleaseOv" onclick="if(event.target.id==='warningReleaseOv')closeWarningRelease()">
+  <div class="box" style="max-width:480px;background:#fff9e6;border:2px solid #fbbf24">
+    <h3 style="color:#92400e;margin-top:0">⚠️ LƯU Ý QUAN TRỌNG</h3>
+    <div style="background:#fffbeb;border-left:4px solid #f59e0b;border-radius:6px;padding:14px;margin-bottom:14px;font-size:14px;line-height:1.6;color:#92400e">
+      <strong>Khi sử dụng xong phòng, vui lòng bấm nút "Trả phòng".</strong><br><br>
+      📍 <strong>Hạn trả phòng:</strong> Đến 22h00 cùng ngày<br>
+      ⛔ <strong>Hậu quả:</strong> Nếu không trả phòng đúng hạn, bạn sẽ <strong>BỊ KHÓA ĐẶT PHÒNG</strong> và phải liên hệ Admin để mở khóa.<br><br>
+      Cảm ơn sự hợp tác!
+    </div>
+    <div class="mfoot">
+      <button class="act btn-prim" onclick="closeWarningRelease()" style="flex:1">Đã hiểu</button>
+    </div>
+  </div>
+</div>
+
 <div class="ov" id="lockedDeptsOv" onclick="if(event.target.id==='lockedDeptsOv')closeLockedDepts()">
   <div class="box" style="max-width:540px;max-height:85vh;display:flex;flex-direction:column">
     <h3>🔐 Người dùng bị khóa đặt phòng</h3>
@@ -930,7 +944,7 @@ let fdb=null, adminPinCache=null;
 // Mật khẩu Admin (đã mã hoá SHA-256 — không thể đọc ngược từ đây)
 const ADMIN_HASH = "332244fba95bb1c48a458e3ea2bc86ed4880bc4e6f167ab13d14030ccef3262f";
 // Số phiên bản trang (tăng lên mỗi khi nâng cấp; tab cũ hơn sẽ bị buộc tải lại)
-const APP_VERSION = 32;
+const APP_VERSION = 39;
 // Webhook n8n để gửi email nhắc trả phòng (dán URL webhook của bạn vào đây)
 const NOTIFY_HOOK = "https://phuongvy.app.n8n.cloud/webhook/traphong";
 </script>
@@ -1305,14 +1319,22 @@ function unlockUser(name){
   const locked=JSON.parse(localStorage.getItem('ph_lockedUsers')||'{}');
   const entry=locked[name];
   const safeKey=(entry&&entry._firebaseKey) || name.replace(/[.#$\[\]/]/g,'_');
+  
+  // Xóa khỏi localStorage
   delete locked[name];
   localStorage.setItem('ph_lockedUsers',JSON.stringify(locked));
+  console.log('✅ [Unlock] Xóa khỏa localStorage:', name);
+  
+  // Xóa khỏi Firebase
   if(USE_FB){
-    // Xóa bằng key đã lưu
-    fdb.ref('config/lockedUsers/'+safeKey).remove();
-    // Cũng xóa theo tên gốc phòng trường hợp dữ liệu cũ lưu theo tên
-    fdb.ref('config/lockedUsers/'+name).remove();
+    fdb.ref('config/lockedUsers/'+safeKey).remove().then(()=>{
+      console.log('✅ [Unlock] Xóa khỏa Firebase (key):', safeKey);
+    }).catch(err=>console.error('❌ Firebase remove key failed:', err));
+    
+    // Cũng xóa theo tên gốc (trường hợp dữ liệu cũ)
+    fdb.ref('config/lockedUsers/'+name).remove().catch(()=>{});
   }
+  render(); // Cập nhật UI ngay
 }
 function isUserLocked(name){
   const locked=JSON.parse(localStorage.getItem('ph_lockedUsers')||'{}');
@@ -1440,6 +1462,15 @@ function getStartAndEndTime(){
   return {start,end};
 }
 
+function showWarningReleaseRoom(){
+  const ov=document.getElementById('warningReleaseOv');
+  if(ov) ov.classList.add('on');
+}
+function closeWarningRelease(){
+  const ov=document.getElementById('warningReleaseOv');
+  if(ov) ov.classList.remove('on');
+}
+
 function checkOverdueAndNotify(){
   const today=ymd(new Date()), now=nowMin();
   live().forEach(b=>{
@@ -1448,7 +1479,7 @@ function checkOverdueAndNotify(){
     const overdueMin = now - e;
     if(overdueMin < 0) return;
 
-    // 1. Gửi email khi hết giờ (lần đầu, chỉ khi có NOTIFY_HOOK)
+    // 1. Gửi email khi hết giờ (lần đầu)
     if(USE_FB && NOTIFY_HOOK && e<=now && !b.notifiedSchedule){
       b.notifiedSchedule=true; dbSaveBooking(b);
       if(b.email){
@@ -1459,15 +1490,15 @@ function checkOverdueAndNotify(){
       }
     }
 
-    // 2. Khóa người dùng sau 15 phút quá giờ chưa trả phòng
-    if(overdueMin >= 15 && !b.autoReleased){
-      b.released=true;
-      b.autoReleased=true;
-      b.autoReleasedAt=new Date().toISOString();
-      b.releasedBy='(hệ thống tự động)';
-      dbSaveBooking(b);
-      if(b.name){ lockUser(b.name, b.dept, b.roomId, b.date, b.end); render(); }
-      console.warn('[Auto-Lock]', b.name, 'quá giờ', overdueMin, 'phút →  khóa');
+    // 2. Khóa người dùng khi hết ngày (22:00) chưa trả phòng — KHÔNG tự động trả
+    if(now >= CLOSE && !b.locked){
+      // Chỉ khóa, KHÔNG trả phòng
+      if(b.name){ 
+        lockUser(b.name, b.dept, b.roomId, b.date, b.end);
+        b.locked = true; // Đánh dấu đã khóa để không khóa lần nữa
+        dbSaveBooking(b);
+        console.warn('[Lock-Only]', b.name, 'không trả phòng đến 22:00 → KHÓA (chưa trả)');
+      }
     }
   });
 }
@@ -1541,50 +1572,50 @@ function renderToday(){
   [1,2,3].forEach(f=>{
     html+=`<div class="floor"><div class="floor-h"><span class="num">${f}</span> Tầng ${f}</div><div class="grid">`;
     ROOMS.filter(r=>r.floor===f).forEach(r=>{
-      const s=isToday ? roomStatusToday(r.id) : roomStatusOnDate(r.id, viewDate);
-      const busy=s.state==='busy', pend=s.state==='pend';
-      let body, badgeCls, badgeTxt, roomCls, actions;
-      if(busy){
-        const c=s.cur;
-        const fixed=!!c.recurring;
-        const nxt=s.list.find(b=>!isPending(b)&&b.id!==c.id&&mins(b.start)>=mins(c.end)&&mins(b.start)<CLOSE);
+      // Lấy TẤT CẢ booking trong ngày
+      const allBookings=bookingsOf(r.id, viewDate).filter(b=>!b.cancelled);
+      const now=isToday ? nowMin() : -1;
+      
+      // Tìm booking hiện tại
+      const cur=allBookings.find(b=>!isPending(b)&&mins(b.start)<=now&&now<mins(b.end));
+      
+      let roomCls='free', badgeCls='free', badgeTxt='Trống', body='', actions='';
+      
+      if(cur){
+        // Đang dùng
+        const fixed=!!cur.recurring;
         roomCls=fixed?'fixed':'busy'; badgeCls=fixed?'fixed':'busy'; badgeTxt=fixed?'Lịch cố định':'Đang dùng';
-        body=`<div class="status ${fixed?'fixed':''}"><div class="who">${fixed?'📌 ':''}${esc(c.name)} — ${esc(c.dept)}</div>
-          <div class="meta2">${esc(c.purpose||'(không ghi nội dung)')} · ${c.people||'?'} người</div>
-          <div class="meta2">⏱ Đến ${c.end}</div>
-          ${r.loc?`<div class="meta2">📍 ${esc(r.loc)}</div>`:''}
-          ${c.createdAt?`<div class="meta2">Đặt lúc: ${new Date(c.createdAt).toLocaleString('vi-VN')}</div>`:''}</div>`;
-        if(nxt) body+=`<div class="next">▸ Ca tiếp theo: ${nxt.start}–${nxt.end} · ${esc(nxt.name)}</div>`;
-        const bookLater = mins(c.end)<CLOSE ? `<button class="act btn-prim" onclick="openBook('${r.id}','${viewDate}','${c.end}')">Đăng ký ca sau</button>` : '';
-        const releaseBtn = (isToday && !fixed) ? `<button class="act btn-danger" onclick="releaseNow('${c.id}')">Trả phòng</button>` : '';
-        actions = releaseBtn + `<button class="act btn-soft" onclick="openDetail('${c.id}')">Chi tiết</button>` + bookLater;
-      }else if(pend){
-        const p=s.pend;
-        roomCls='pend'; badgeCls='pend'; badgeTxt='Chờ duyệt';
-        body=`<div class="status pend"><div class="who">⏳ ${esc(p.name)} — ${esc(p.dept)}</div>
-          <div class="meta2">${p.start}–${p.end} · ${esc(p.purpose||'(không ghi)')}</div>
-          <div class="meta2">Đang chờ Admin xác nhận</div>
-          ${r.loc?`<div class="meta2">📍 ${esc(r.loc)}</div>`:''}
-          ${p.createdAt?`<div class="meta2">Đặt lúc: ${new Date(p.createdAt).toLocaleString('vi-VN')}</div>`:''}</div>`;
-        const bookLater = mins(p.end)<CLOSE ? `<button class="act btn-prim" onclick="openBook('${r.id}','${viewDate}','${p.end}')">Đăng ký ca khác</button>` : '';
-        actions = (isAdmin
-          ? `<button class="act btn-prim" onclick="approve('${p.id}')">Xác nhận</button>
-             <button class="act btn-danger" onclick="reject('${p.id}')">Từ chối</button>`
-          : `<button class="act btn-soft" onclick="openDetail('${p.id}')">Chi tiết</button>`) + bookLater;
+        body=`<div class="status ${fixed?'fixed':''}">${fixed?'📌 ':''}${esc(cur.name)} — ${esc(cur.dept)}</div>
+          <div class="meta2">${esc(cur.purpose||'(không ghi nội dung)')} · ${cur.people||'?'} người</div>
+          <div class="meta2">⏱ Đến ${cur.end}</div>
+          ${r.loc?`<div class="meta2">📍 ${esc(r.loc)}</div>`:''}<div class="meta2"><strong>🔴 ĐANG DÙNG</strong></div>`;
+        const releaseBtn = (isToday && !fixed) ? `<button class="act btn-danger" onclick="releaseNow('${cur.id}')">Trả phòng</button>` : '';
+        actions = releaseBtn + `<button class="act btn-soft" onclick="openDetail('${cur.id}')">Chi tiết</button>`;
+      }else if(allBookings.length>0){
+        // Có booking trong ngày → hiển thị tất cả
+        badgeCls='booked'; badgeTxt='Có lịch';
+        body=`<div class="status"><strong>📅 Lịch hôm nay:</strong></div>`;
+        allBookings.forEach(b=>{
+          const isPend=isPending(b), isPast=isToday && mins(b.end)<=now, isCur=cur&&cur.id===b.id;
+          const icon=isPast ? '✓' : isPend ? '⏳' : '⚪';
+          const status=isPast ? ' (đã qua)' : isPend ? ' (chờ duyệt)' : '';
+          body+=`<div class="meta2">${icon} <strong>${b.start}–${b.end}</strong> ${esc(b.name)}${status}</div>`;
+        });
+        body+=`<div class="meta2">${r.loc?`📍 ${esc(r.loc)}`:''}`;
+        actions=`<button class="act btn-prim" onclick="openBook('${r.id}','${viewDate}')">Đăng ký</button>`;
       }else{
-        roomCls='free'; badgeCls='free'; badgeTxt='Trống';
-        body=`<div class="status empty">Đang trống${s.next?'':' cả ngày'}</div>`;
-        if(s.next) body+=`<div class="next">▸ Sắp tới: ${s.next.start}–${s.next.end} · ${esc(s.next.name)}</div>`;
+        // Trống cả ngày
+        body=`<div class="status empty">Đang trống cả ngày</div>`;
         actions=`<button class="act btn-prim" onclick="openBook('${r.id}','${ymd(today)}')">Đăng ký</button>`;
       }
+      
       html+=`<div class="room ${roomCls}">
         <div class="room-top">
           <div><div class="room-name">${esc(r.name)}</div>${r.sub?`<div class="room-sub">${esc(r.sub)}</div>`:''}</div>
           <span class="badge ${badgeCls}">${badgeTxt}</span>
         </div>
         <div class="meta"><span class="chip">👥 ${r.cap}</span>${r.proj?'<span class="chip proj">📽 Máy chiếu</span>':''}</div>
-        ${r.loc?`<div class="locinfo">📍 ${esc(r.loc)}</div>`:''}
-        ${body}
+        ${r.loc?`<div class="locinfo">📍 ${esc(r.loc)}</div>`:''}<div class="body">${body}</div>
         <div class="room-actions">${actions}</div>
       </div>`;
     });
@@ -2072,6 +2103,8 @@ async function saveBooking(){
     msg += ` Bỏ qua ${bad.length} ngày trùng: ${badDetails}.`;
   }
   toast(msg);
+  // Hiển thị modal cảnh báo về trả phòng
+  setTimeout(()=>showWarningReleaseRoom(), 500);
 }
 
 /* ---------- Trả phòng / Chi tiết / Huỷ ---------- */
@@ -2122,19 +2155,24 @@ function extendOverTime(){
 }
 async function releaseNow(id){
   const b=bookings.find(x=>x.id===id); if(!b)return;
-  // Chỉ người đặt phòng (theo Họ tên lưu trên máy) hoặc Admin mới được trả phòng
-  if(!isAdmin){
-    let myName=''; try{ myName=localStorage.getItem('ph_name')||''; }catch(e){}
-    const norm=s=>(s||'').normalize('NFC').trim().toLowerCase().replace(/\s+/g,' ');
-    if(!myName || norm(myName)!==norm(b.name)){
-      toast('Chỉ người đặt phòng hoặc Admin mới được trả phòng này.');
-      return;
-    }
+  
+  // Yêu cầu nhập tên xác thực
+  const inputName=prompt(`🔒 Xác thực: nhập tên người mượn phòng để trả phòng`, '');
+  if(!inputName){
+    toast('Huỷ trả phòng.');
+    return;
   }
+  
+  // So sánh tên (normalize)
+  const norm=s=>(s||'').normalize('NFC').trim().toLowerCase().replace(/\s+/g,' ');
+  if(norm(inputName)!==norm(b.name)){
+    toast('❌ Tên không đúng! Chỉ người đặt phòng mới được trả.');
+    return;
+  }
+  
+  // Trả phòng
   const isPast = b.date < ymd(new Date());
-  // Không cần confirm — trả phòng ngay lập tức
   if(!isPast){
-    // Dùng đúng thời điểm hiện tại, không làm tròn
     const dt=new Date();
     const nowExact=dt.getHours()*60+dt.getMinutes();
     const endMin=Math.min(Math.max(nowExact, mins(b.start)+1), CLOSE);
@@ -2142,20 +2180,21 @@ async function releaseNow(id){
   }
   b.released=true;
   b.releasedAt=new Date().toISOString();
-  let rb=''; try{ rb=localStorage.getItem('ph_name')||''; }catch(e){}
-  b.releasedBy=rb||b.name;
+  b.releasedBy=inputName;
   myReleases.add(id);
   dbSaveBooking(b); render(); updateBell();
-  // Ẩn banner ngay lập tức sau khi trả phòng
+  toast('✅ Trả phòng thành công.');
+  
+  // Ẩn banner
   const bar=document.getElementById('remindBar');
   if(bar){
     const stillOver=bar.querySelectorAll('.rm-item.over');
     stillOver.forEach(el=>{ if(el.textContent.includes(b.roomId)||el.innerHTML.includes(b.id)) el.remove(); });
     if(!bar.querySelector('.rm-item')) bar.classList.remove('on');
   }
-  // Cập nhật modal chi tiết ngay nếu đang mở
+  
+  // Cập nhật modal chi tiết
   if(detailId===id){
-    const relTime=(()=>{ const dt=new Date(b.releasedAt); const p=n=>String(n).padStart(2,'0'); return p(dt.getHours())+':'+p(dt.getMinutes()+':'+p(dt.getSeconds())); })();
     const dRelBtn=document.getElementById('dRelBtn'); if(dRelBtn) dRelBtn.style.display='none';
     // Thêm dòng trả phòng vào body nếu chưa có
     const dBody=document.getElementById('dBody');
