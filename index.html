@@ -51,32 +51,32 @@
   .btn-danger{background:var(--busy-bg);color:var(--busy)}
 
   /* Floor groups */
-  .floor{margin-bottom:22px}
-  .floor-h{display:flex;align-items:center;gap:9px;margin:0 2px 11px;font-weight:700;font-size:14px;color:var(--navy)}
-  .floor-h .num{width:24px;height:24px;border-radius:7px;background:var(--navy);color:#fff;display:grid;place-items:center;font-size:13px}
+  .floor{margin-bottom:28px}
+  .floor-h{display:flex;align-items:center;gap:9px;margin:0 2px 14px;font-weight:700;font-size:15px;color:var(--navy)}
+  .floor-h .num{width:28px;height:28px;border-radius:8px;background:var(--navy);color:#fff;display:grid;place-items:center;font-size:14px;font-weight:700}
 
-  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
-  .room{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:14px;border-left:5px solid var(--line);display:flex;flex-direction:column;gap:10px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px;width:100%;box-sizing:border-box}
+  .room{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px;border-left:5px solid var(--line);display:flex;flex-direction:column;gap:12px;min-height:280px}
   .room.free{border-left-color:var(--free)}
   .room.busy{border-left-color:var(--busy)}
-  .room-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
-  .room-name{font-weight:700;font-size:15px;line-height:1.25}
+  .room-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;min-height:40px}
+  .room-name{font-weight:700;font-size:16px;line-height:1.3}
   .room-sub{font-size:12px;color:var(--mut);margin-top:2px}
-  .meta{display:flex;gap:7px;flex-wrap:wrap;margin-top:2px}
-  .locinfo{font-size:12px;color:var(--mut);font-weight:600;margin:-4px 0 4px}
-  .chip{font-size:11.5px;background:#F1F5F9;color:#475569;border-radius:999px;padding:2px 9px;font-weight:600}
+  .meta{display:flex;gap:8px;flex-wrap:wrap;margin-top:3px}
+  .locinfo{font-size:13px;color:var(--mut);font-weight:600;margin:-2px 0 6px}
+  .chip{font-size:12px;background:#F1F5F9;color:#475569;border-radius:999px;padding:3px 11px;font-weight:600}
   .chip.proj{background:#EAF2FF;color:#2563EB}
-  .badge{font-size:12px;font-weight:700;padding:4px 10px;border-radius:999px;white-space:nowrap}
+  .badge{font-size:13px;font-weight:700;padding:5px 12px;border-radius:999px;white-space:nowrap}
   .badge.free{background:var(--free-bg);color:var(--free)}
   .badge.busy{background:var(--busy-bg);color:var(--busy)}
 
-  .status{font-size:13px;background:#F8FAFC;border-radius:10px;padding:9px 11px;border:1px solid var(--line)}
+  .status{font-size:14px;background:#F8FAFC;border-radius:10px;padding:11px 13px;border:1px solid var(--line);flex:1}
   .status .who{font-weight:700}
-  .status .meta2{color:var(--mut);font-size:12px;margin-top:2px}
+  .status .meta2{color:var(--mut);font-size:12.5px;margin-top:3px}
   .status.empty{color:var(--mut)}
   .next{font-size:12px;color:var(--soon);margin-top:6px;font-weight:600}
-  .room-actions{display:flex;gap:8px;margin-top:auto}
-  .room-actions button{flex:1}
+  .room-actions{display:flex;gap:10px;margin-top:auto;flex-wrap:wrap;padding-top:8px;border-top:1px solid var(--line)}
+  .room-actions button{flex:1;min-width:100px;font-size:14px;font-weight:600}
 
   /* Weekly grid — kiểu bảng phòng họp (S/C) */
   .weekwrap{overflow-x:auto;background:#fff;border-radius:var(--radius);box-shadow:var(--shadow)}
@@ -381,19 +381,18 @@
     .legend i{width:8px;height:8px;border-radius:2px;flex-shrink:0}
 
     /* ===== CARDS (HÔM NAY) ===== */
-    .grid{grid-template-columns:1fr;gap:10px} /* 1 cột - tránh nút bị cắt */
-    .room{padding:10px 9px;gap:5px;border-radius:12px}
-    .room-name{font-size:13px;font-weight:800;line-height:1.2}
-    .room-sub{font-size:10.5px;margin-top:-2px}
-    .meta{font-size:11px;gap:4px;flex-wrap:wrap}
-    .badge{font-size:10px;padding:2px 7px;border-radius:20px}
-    .loc-hint{font-size:10px}
-    .cur-bk{font-size:11px;padding:5px 7px;border-radius:7px;line-height:1.35}
-    .cur-bk b{font-size:12px}
-    .room-actions{gap:6px;margin-top:4px;flex-wrap:wrap}
-    .room-actions button{font-size:13px;padding:10px 8px;min-height:46px;border-radius:10px;flex:1;min-width:80px}
-    .floor-h{font-size:13px;padding:8px 10px;font-weight:800}
-    .floor{margin-bottom:12px}
+    .grid{grid-template-columns:1fr;gap:12px;padding:0 4px} /* 1 cột + padding tránh cắt */
+    .room{padding:12px 11px;gap:8px;border-radius:12px;min-height:auto}
+    .room-name{font-size:14px;font-weight:700;line-height:1.3}
+    .room-sub{font-size:11px;margin-top:-1px}
+    .meta{font-size:12px;gap:5px;flex-wrap:wrap}
+    .badge{font-size:11px;padding:3px 9px;border-radius:20px}
+    .status{font-size:12.5px;padding:10px 12px}
+    .room-actions{gap:8px;margin-top:8px;padding-top:8px;flex-wrap:wrap}
+    .room-actions button{font-size:13px;padding:11px 9px;min-height:44px;border-radius:10px;flex:1;min-width:85px}
+    .floor-h{font-size:14px;padding:8px 10px;font-weight:700;gap:8px}
+    .floor-h .num{width:26px;height:26px;font-size:12px}
+    .floor{margin-bottom:16px}
     .empty-state{font-size:13px;padding:24px 16px}
 
     /* ===== MODAL — BOTTOM SHEET ===== */
@@ -595,7 +594,7 @@
   </section>
 
   <footer>
-    Lịch được lưu chung và đồng bộ thời gian thực cho mọi người · Giờ mở cửa 08:00–22:00, Thứ 2 đến Thứ 7 · <b id="versionLabel">Phiên bản 36.0</b>
+    Lịch được lưu chung và đồng bộ thời gian thực cho mọi người · Giờ mở cửa 08:00–22:00, Thứ 2 đến Thứ 7 · <b id="versionLabel">Phiên bản 38.0</b>
     <br><button class="link" onclick="enableNotify()">🔔 Bật thông báo trên trình duyệt</button> · <button class="link" onclick="forgetMe()">Quên Họ tên/Phòng ban đã lưu</button>
   </footer>
 
@@ -771,6 +770,21 @@
 <div id="tip"></div>
 
 <!-- Modal quản lý người dùng bị khóa -->
+<div class="ov" id="warningReleaseOv" onclick="if(event.target.id==='warningReleaseOv')closeWarningRelease()">
+  <div class="box" style="max-width:480px;background:#fff9e6;border:2px solid #fbbf24">
+    <h3 style="color:#92400e;margin-top:0">⚠️ LƯU Ý QUAN TRỌNG</h3>
+    <div style="background:#fffbeb;border-left:4px solid #f59e0b;border-radius:6px;padding:14px;margin-bottom:14px;font-size:14px;line-height:1.6;color:#92400e">
+      <strong>Khi sử dụng xong phòng, vui lòng bấm nút "Trả phòng".</strong><br><br>
+      📍 <strong>Hạn trả phòng:</strong> Đến 22h00 cùng ngày<br>
+      ⛔ <strong>Hậu quả:</strong> Nếu không trả phòng đúng hạn, bạn sẽ <strong>BỊ KHÓA ĐẶT PHÒNG</strong> và phải liên hệ Admin để mở khóa.<br><br>
+      Cảm ơn sự hợp tác!
+    </div>
+    <div class="mfoot">
+      <button class="act btn-prim" onclick="closeWarningRelease()" style="flex:1">Đã hiểu</button>
+    </div>
+  </div>
+</div>
+
 <div class="ov" id="lockedDeptsOv" onclick="if(event.target.id==='lockedDeptsOv')closeLockedDepts()">
   <div class="box" style="max-width:540px;max-height:85vh;display:flex;flex-direction:column">
     <h3>🔐 Người dùng bị khóa đặt phòng</h3>
@@ -930,7 +944,7 @@ let fdb=null, adminPinCache=null;
 // Mật khẩu Admin (đã mã hoá SHA-256 — không thể đọc ngược từ đây)
 const ADMIN_HASH = "332244fba95bb1c48a458e3ea2bc86ed4880bc4e6f167ab13d14030ccef3262f";
 // Số phiên bản trang (tăng lên mỗi khi nâng cấp; tab cũ hơn sẽ bị buộc tải lại)
-const APP_VERSION = 36;
+const APP_VERSION = 38;
 // Webhook n8n để gửi email nhắc trả phòng (dán URL webhook của bạn vào đây)
 const NOTIFY_HOOK = "https://phuongvy.app.n8n.cloud/webhook/traphong";
 </script>
@@ -1448,6 +1462,15 @@ function getStartAndEndTime(){
   return {start,end};
 }
 
+function showWarningReleaseRoom(){
+  const ov=document.getElementById('warningReleaseOv');
+  if(ov) ov.classList.add('on');
+}
+function closeWarningRelease(){
+  const ov=document.getElementById('warningReleaseOv');
+  if(ov) ov.classList.remove('on');
+}
+
 function checkOverdueAndNotify(){
   const today=ymd(new Date()), now=nowMin();
   live().forEach(b=>{
@@ -1467,17 +1490,14 @@ function checkOverdueAndNotify(){
       }
     }
 
-    // 2. Khóa người dùng khi hết ngày (22:00) chưa trả phòng
-    if(now >= CLOSE && !b.autoReleased){
-      b.released=true;
-      b.autoReleased=true;
-      b.autoReleasedAt=new Date().toISOString();
-      b.releasedBy='(hệ thống tự động - hết giờ 22:00)';
-      dbSaveBooking(b);
-      // ⚠️ Khóa người dùng vì quá giờ không trả phòng
+    // 2. Khóa người dùng khi hết ngày (22:00) chưa trả phòng — KHÔNG tự động trả
+    if(now >= CLOSE && !b.locked){
+      // Chỉ khóa, KHÔNG trả phòng
       if(b.name){ 
         lockUser(b.name, b.dept, b.roomId, b.date, b.end);
-        console.warn('[Auto-Lock]', b.name, 'không trả phòng đến 22:00 → KHÓA');
+        b.locked = true; // Đánh dấu đã khóa để không khóa lần nữa
+        dbSaveBooking(b);
+        console.warn('[Lock-Only]', b.name, 'không trả phòng đến 22:00 → KHÓA (chưa trả)');
       }
     }
   });
@@ -2083,6 +2103,8 @@ async function saveBooking(){
     msg += ` Bỏ qua ${bad.length} ngày trùng: ${badDetails}.`;
   }
   toast(msg);
+  // Hiển thị modal cảnh báo về trả phòng
+  setTimeout(()=>showWarningReleaseRoom(), 500);
 }
 
 /* ---------- Trả phòng / Chi tiết / Huỷ ---------- */
