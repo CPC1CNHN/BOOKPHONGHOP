@@ -1237,20 +1237,35 @@ function doUnlockOne(i){
   const ls=JSON.parse(localStorage.getItem('ph_lockedUsers')||'{}');
   delete ls[info.name];
   localStorage.setItem('ph_lockedUsers',JSON.stringify(ls));
-  // Xóa khỏi Firebase bằng key gốc (không encode)
+  // Xóa khỏi Firebase — thử mọi dạng key có thể đã được dùng để lưu, để chắc chắn xoá hết
+  const keysToTry=new Set();
+  if(info._fbKey) keysToTry.add(info._fbKey);
+  keysToTry.add(info.name);
+  keysToTry.add(info.name.replace(/[.#$\[\]/]/g,'_'));
+  keysToTry.add(encodeURIComponent(info.name).replace(/[.#$\[\]]/g,'_'));
   if(USE_FB){
-    if(info._fbKey){
-      fdb.ref('config/lockedUsers/'+info._fbKey).remove();
-    } else {
-      // Thử cả 2 dạng key
-      fdb.ref('config/lockedUsers/'+info.name).remove();
-      const enc=encodeURIComponent(info.name).replace(/[.#$\[\]]/g,'_');
-      fdb.ref('config/lockedUsers/'+enc).remove();
-    }
+    Promise.all([...keysToTry].map(k=>fdb.ref('config/lockedUsers/'+k).remove()))
+      .then(()=>{
+        // Đọc lại để CHẮC CHẮN đã xoá thật trên Firebase, không chỉ tin vào việc gọi remove() thành công
+        return fdb.ref('config/lockedUsers').once('value');
+      })
+      .then(s=>{
+        const raw=s.val()||{};
+        const stillThere=Object.values(raw).some(v=>v && v.name===info.name);
+        if(stillThere){
+          toast('⚠️ Chưa mở khóa được — thử lại hoặc kiểm tra kết nối mạng.');
+        }else{
+          toast('✅ Đã mở khóa thật sự: '+info.name);
+        }
+        render(); renderDiary();
+        openLockedDepts(); // refresh list
+      })
+      .catch(()=>{ toast('⚠️ Lỗi khi mở khóa — kiểm tra kết nối mạng và thử lại.'); });
+  } else {
+    toast('✅ Đã mở khóa: '+info.name);
+    render(); renderDiary();
+    openLockedDepts();
   }
-  toast('✅ Đã mở khóa: '+info.name);
-  render(); renderDiary();
-  openLockedDepts(); // refresh list
 }
 
 function closeLockedDepts(){
@@ -1268,7 +1283,7 @@ function lockUser(name, dept, roomId, date, end){
   const entry={
     name:name, dept:dept, room:r.name, date:date, end:end,
     lockedAt:new Date().toISOString(),
-    reason:`Không trả phòng ${r.name} hết giờ lúc ${end} ngày ${date}.`
+    reason:`Không bấm "Trả phòng" cho ${r.name} (dùng đến ${end}) trước 22:00 ngày ${date}.`
   };
   // Cập nhật localStorage
   const locked=JSON.parse(localStorage.getItem('ph_lockedUsers')||'{}');
@@ -1437,15 +1452,14 @@ function checkOverdueAndNotify(){
       }
     }
 
-    // 2. Khóa người dùng sau 15 phút quá giờ chưa trả phòng
-    if(overdueMin >= 15 && !b.autoReleased){
-      b.released=true;
-      b.autoReleased=true;
-      b.autoReleasedAt=new Date().toISOString();
-      b.releasedBy='(hệ thống tự động)';
+    // 2. Cho phép trả phòng tự do trong ngày đến 22:00 — KHÔNG tự động trả phòng.
+    //    Chỉ khi đã đến/qua giờ đóng cửa (22:00) mà vẫn chưa bấm "Trả phòng" thì mới khóa.
+    if(now >= CLOSE && !b.autoLocked){
+      b.autoLocked=true;
+      b.autoLockedAt=new Date().toISOString();
       dbSaveBooking(b);
       if(b.name){ lockUser(b.name, b.dept, b.roomId, b.date, b.end); render(); }
-      console.warn('[Auto-Lock]', b.name, 'quá giờ', overdueMin, 'phút →  khóa');
+      console.warn('[Auto-Lock]', b.name, 'chưa trả phòng đến hết giờ (22:00) → khóa');
     }
   });
 }
@@ -1924,10 +1938,25 @@ function updRangeHint(){
 }
 function openBookHalf(roomId,date,half){
   openBook(roomId,date);
-  const sStart = half==='S' ? '08:00' : '13:00';
-  const sEnd   = half==='S' ? '12:00' : '17:00';
-  document.getElementById('fCustomStart').value=sStart;
-  document.getElementById('fCustomEnd').value=sEnd;
+  // Khung giờ của nửa ngày đang bấm vào
+  const winStart = half==='S' ? 480 : 780;   // 08:00 hoặc 13:00
+  const winEnd   = half==='S' ? 720 : 1020;  // 12:00 hoặc 17:00
+  // Các lượt đã có trong ngày (kể cả đã trả sớm → end đã được rút ngắn, kể cả đang chờ duyệt)
+  const occ=bookingsOf(roomId,date)
+    .filter(b=>!b.cancelled && b.status!=='rejected')
+    .map(b=>({s:mins(b.start),e:mins(b.end)}))
+    .sort((a,b)=>a.s-b.s);
+  // Tìm mốc bắt đầu trống sớm nhất trong khung, bỏ qua các lượt đã chiếm ngay từ đầu khung
+  let start=winStart;
+  occ.forEach(o=>{ if(o.s<=start && o.e>start) start=o.e; });
+  if(start>=winEnd) start=winEnd; // nửa ngày này đã kín hoàn toàn
+  // Tìm mốc kết thúc: tới lượt tiếp theo sau start, hoặc hết khung
+  const next=occ.find(o=>o.s>=start && o.s<winEnd);
+  let end = next ? next.s : winEnd;
+  if(end<=start) end=Math.min(start+60,1440); // dự phòng, tránh giờ kết thúc <= giờ bắt đầu
+  const toHM2=m=>String(Math.floor(m/60)).padStart(2,'0')+':'+String(m%60).padStart(2,'0');
+  document.getElementById('fCustomStart').value=toHM2(start);
+  document.getElementById('fCustomEnd').value=toHM2(end);
 }
 function closeOv(){ document.getElementById('ov').classList.remove('on'); modalOpen=false; editingId=null; }
 function showErr(m){const e=document.getElementById('mErr');e.innerHTML=m;e.classList.add('on')}
@@ -2050,6 +2079,7 @@ async function saveBooking(){
     msg += ` Bỏ qua ${bad.length} ngày trùng: ${badDetails}.`;
   }
   toast(msg);
+  alert('✅ '+msg+'\n\n⚠️ Lưu ý: khi sử dụng xong, hãy bấm "Trả phòng".\nHạn trả phòng: đến 22:00 cùng ngày.\nNếu không trả phòng, bạn sẽ bị KHÓA và cần Admin mở khóa mới đặt phòng tiếp được.');
 }
 
 /* ---------- Trả phòng / Chi tiết / Huỷ ---------- */
@@ -2100,13 +2130,22 @@ function extendOverTime(){
 }
 async function releaseNow(id){
   const b=bookings.find(x=>x.id===id); if(!b)return;
-  // Chỉ người đặt phòng (theo Họ tên lưu trên máy) hoặc Admin mới được trả phòng
+  // Chỉ người đặt phòng hoặc Admin mới được trả phòng.
+  // Xác thực bằng TÊN (không phụ thuộc thiết bị) — nếu tên lưu sẵn trên máy này
+  // đã khớp thì trả ngay; nếu không (vd đặt trên điện thoại, trả trên máy tính)
+  // thì hỏi nhập đúng tên người đăng ký 1 lần để xác nhận.
   if(!isAdmin){
-    let myName=''; try{ myName=localStorage.getItem('ph_name')||''; }catch(e){}
     const norm=s=>(s||'').normalize('NFC').trim().toLowerCase().replace(/\s+/g,' ');
-    if(!myName || norm(myName)!==norm(b.name)){
-      toast('Chỉ người đặt phòng hoặc Admin mới được trả phòng này.');
-      return;
+    let myName=''; try{ myName=localStorage.getItem('ph_name')||''; }catch(e){}
+    if(norm(myName)!==norm(b.name)){
+      const typed=prompt(`Để trả phòng, hãy nhập đúng tên người đã đăng ký (${b.name}):`);
+      if(typed===null) return; // người dùng bấm Huỷ
+      if(norm(typed)!==norm(b.name)){
+        toast('❌ Tên không khớp — chỉ người đăng ký mới được trả phòng này.');
+        return;
+      }
+      // Nhập đúng tên → ghi nhớ trên thiết bị này cho lần sau
+      try{ localStorage.setItem('ph_name', typed.trim()); }catch(e){}
     }
   }
   const isPast = b.date < ymd(new Date());
