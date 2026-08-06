@@ -2207,8 +2207,8 @@ function openDetail(id){
      <div><b>Số người:</b> ${esc(b.people||'?')}</div>
      <div style="color:var(--mut);font-size:12.5px;margin-top:4px">🕐 Đặt lúc: ${b.createdAt ? (()=>{ const dt=new Date(b.createdAt); const p=n=>String(n).padStart(2,'0'); return p(dt.getDate())+'/'+p(dt.getMonth()+1)+'/'+dt.getFullYear()+' lúc '+p(dt.getHours())+':'+p(dt.getMinutes())+':'+p(dt.getSeconds()); })() : '—'}</div>${grpNote}`;
   const todayStr=ymd(new Date());
-  // Cho phép trả phòng bất cứ lúc nào trong ngày (đến 22:00), không chỉ khi đang diễn ra
-  const canReleaseToday = !pend && !fixed && !b.released && !b.cancelled && b.date===todayStr && nowMin()<CLOSE;
+  // Cho phép trả phòng bất cứ lúc nào trong ngày (đến 22:00), kể cả khi chưa được Admin duyệt
+  const canReleaseToday = !fixed && !b.released && !b.cancelled && b.date===todayStr && nowMin()<CLOSE;
   const pastUnreleased = !pend && !fixed && !b.released && !b.cancelled && b.date < todayStr;
   const isOwner = isOwnerOrAdmin(b);
   document.getElementById('dApproveBtn').style.display = (isAdmin && pend) ? '' : 'none';
@@ -2403,9 +2403,9 @@ function refreshAdminUI(){
     else { ap.classList.remove('on'); }
   }
   const fab=document.getElementById('adminFab'); if(fab) fab.style.display='none';
-  // Hiện nút "Lịch của tôi" khi đã có tên lưu
+  // Nút "Lịch của tôi": luôn hiện — nếu chưa có tên lưu sẵn, bấm vào sẽ hỏi tên (dùng được mọi thiết bị)
   const mhb=document.getElementById('myHistBtn');
-  if(mhb){ mhb.style.display = getSavedName() ? '' : 'none'; } renderDiary();
+  if(mhb){ mhb.style.display = ''; } renderDiary();
   const lml=document.getElementById('lockManageLink'); if(lml) lml.style.display = isAdmin ? '' : 'none';
   const mrl=document.getElementById('manageRoomsLink'); if(mrl) mrl.style.display = isAdmin ? '' : 'none';
   const rsl=document.getElementById('restoreLink'); if(rsl) rsl.style.display = isAdmin ? '' : 'none';
@@ -2557,8 +2557,13 @@ function forgetMe(){
   toast('Đã quên Họ tên & Phòng ban đã lưu trên thiết bị này.');
 }
 function openMyHistory(){
-  const name=getSavedName();
-  if(!name){ toast('Hãy đăng ký một lượt để hệ thống nhận ra bạn.'); return; }
+  let name=getSavedName();
+  if(!name){
+    const typed=prompt('Nhập đúng Họ tên đã dùng khi đăng ký phòng để xem lịch của bạn:');
+    if(!typed || !typed.trim()){ return; }
+    name=typed.trim();
+    try{ localStorage.setItem('ph_name', name); }catch(e){}
+  }
   document.getElementById('myHistOv').classList.add('on');
   renderMyHistoryStats(name);
   renderMyHistory('upcoming');
@@ -2751,7 +2756,7 @@ function forceRefreshReminders(){
   const stillOver = live().filter(b=>{
     if(isPending(b)||b.released||b.date!==today) return false;
     const e=mins(b.end);
-    return e<=now && e>now-30;
+    return e<=now && now<CLOSE;
   });
   if(!stillOver.length && bar){ bar.classList.remove('on'); bar.innerHTML=''; }
   else checkReminders();
