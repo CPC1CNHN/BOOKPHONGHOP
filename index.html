@@ -2206,12 +2206,14 @@ function openDetail(id){
      <div><b>Nội dung:</b> ${esc(b.purpose||'(không ghi)')}</div>
      <div><b>Số người:</b> ${esc(b.people||'?')}</div>
      <div style="color:var(--mut);font-size:12.5px;margin-top:4px">🕐 Đặt lúc: ${b.createdAt ? (()=>{ const dt=new Date(b.createdAt); const p=n=>String(n).padStart(2,'0'); return p(dt.getDate())+'/'+p(dt.getMonth()+1)+'/'+dt.getFullYear()+' lúc '+p(dt.getHours())+':'+p(dt.getMinutes())+':'+p(dt.getSeconds()); })() : '—'}</div>${grpNote}`;
-  const ongoing = !pend && !fixed && b.date===ymd(new Date()) && mins(b.start)<=nowMin() && nowMin()<mins(b.end) && !b.released;
-  const pastUnreleased = !pend && !fixed && !b.released && !b.cancelled && b.date < ymd(new Date());
+  const todayStr=ymd(new Date());
+  // Cho phép trả phòng bất cứ lúc nào trong ngày (đến 22:00), không chỉ khi đang diễn ra
+  const canReleaseToday = !pend && !fixed && !b.released && !b.cancelled && b.date===todayStr && nowMin()<CLOSE;
+  const pastUnreleased = !pend && !fixed && !b.released && !b.cancelled && b.date < todayStr;
   const isOwner = isOwnerOrAdmin(b);
   document.getElementById('dApproveBtn').style.display = (isAdmin && pend) ? '' : 'none';
-  // Hiện nút trả phòng: đang họp (chủ phòng hoặc admin), hoặc ngày cũ chưa trả (admin)
-  document.getElementById('dRelBtn').style.display = ongoing || (pastUnreleased && isAdmin) ? '' : 'none';
+  // Hiện nút trả phòng: trong ngày (tới 22:00) cho mọi người, hoặc ngày cũ chưa trả (chỉ Admin)
+  document.getElementById('dRelBtn').style.display = canReleaseToday || (pastUnreleased && isAdmin) ? '' : 'none';
   document.getElementById('dRelBtn').textContent = pastUnreleased ? 'Đánh dấu đã trả phòng' : 'Trả phòng ngay';
   const canEdit = !fixed && !b.released && isAdmin; // Chỉ Admin mới được sửa lịch
   document.getElementById('dEditBtn').style.display = canEdit ? '' : 'none';
@@ -2761,7 +2763,7 @@ function checkReminders(){
     if(isPending(b)||b.released||b.date!==today)return;
     const e=mins(b.end);
     if(e>now && e-now<=REMIND_BEFORE) soon.push(b);
-    else if(e<=now && e>now-30) over.push(b);   // vừa quá giờ trong 30'
+    else if(e<=now && now<CLOSE) over.push(b);   // quá giờ, hiện liên tục tới 22:00
   });
   const bar=document.getElementById('remindBar');
   if(!soon.length && !over.length){ bar.classList.remove('on'); bar.innerHTML=''; return; }
