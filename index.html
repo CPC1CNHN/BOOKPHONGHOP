@@ -1612,7 +1612,7 @@ function renderWeek(){
     rs.forEach((r,idx)=>{
       h+='<tr>';
       if(idx===0) h+=`<td class="c-tang t${f}" rowspan="${rs.length}"><span class="bignum">${f}</span></td>`;
-      h+=`<td class="c-name" data-loc="${esc(r.loc||'')}"><div class="nm">${esc(r.name)} <span style="color:#94A3B8">📍</span></div>${r.sub?`<div class="sb">${esc(r.sub)}</div>`:''}</td>`;
+      h+=`<td class="c-name" data-loc="${esc(r.loc||'')}"><div class="nm">${esc(r.name)}</div>${r.sub?`<div class="sb">${esc(r.sub)}</div>`:''}${r.loc?`<div class="sb" style="color:#0d9488"><span style="color:#94A3B8">📍</span> ${esc(r.loc)}</div>`:''}</td>`;
       h+=`<td class="c-cap">${r.cap}</td>`;
       h+=`<td class="c-proj">${r.proj?'x':''}</td>`;
       days.forEach(d=>{
